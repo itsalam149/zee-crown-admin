@@ -7,7 +7,7 @@ export type Customer = {
   email: string | null;
   mobile: string | null;
   role: string | null;
-  created_at: string | null;
+  created_at: string;
   address: string | null;
   city: string | null;
   state: string | null;
@@ -29,5 +29,5 @@ export type CustomerOrder = Pick<
   Order,
   "id" | "created_at" | "payment_method" | "total_amount" | "status"
 > & {
-  profiles: Pick<Customer, "name" | "address" | "phone"> | null;
+  profiles: Pick<Customer, "name" | "address" | "mobile"> | null;
 };

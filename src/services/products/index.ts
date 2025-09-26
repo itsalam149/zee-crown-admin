@@ -12,8 +12,6 @@ export async function fetchProducts(
     search,
     category,
     priceSort,
-    status,
-    published,
     dateSort,
   }: FetchProductsParams
 ): Promise<FetchProductsResponse> {

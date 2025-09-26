@@ -12,8 +12,8 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s - Zorvex",
-    default: "Zorvex",
+    template: "%s - Zee Crown",
+    default: "Zee Crown",
   },
 };
 

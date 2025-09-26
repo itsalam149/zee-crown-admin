@@ -31,9 +31,7 @@ export const productFormSchema = z
       .min(1, { message: "Product description is required" })
       .max(1000, "Product description must be 1000 characters or less"),
     image: z.union([fileSchema, z.string().url()]),
-    category: z.enum(["Medicines", "Perfumes", "Cosmetics", "Food"], {
-      required_error: "Category is required",
-    }),
+    category: z.string().optional(),
     price: z.coerce
       .number({ invalid_type_error: "Price must be a number" })
       .positive({ message: "Price must be greater than zero" })
@@ -53,13 +51,10 @@ export const productFormSchema = z
       ),
     prescriptionRequired: z.coerce.boolean().optional(),
   })
-  .superRefine((data, ctx) => {
-    // No cross-field validation needed in new schema
-  });
 
 export const productBulkFormSchema = z
   .object({
-    category: z.enum(["Medicines", "Perfumes", "Cosmetics", "Food"]).optional(),
+    category: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (typeof data.category === "undefined") {

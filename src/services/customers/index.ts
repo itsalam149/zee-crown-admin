@@ -17,7 +17,7 @@ export async function fetchCustomers(
 
   if (search) {
     query = query.or(
-      `name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`
+      `name.ilike.%${search}%,email.ilike.%${search}%,mobile.ilike.%${search}%`
     );
   }
 
@@ -37,7 +37,7 @@ export async function fetchCustomerOrders(
   client: SupabaseClient<Database>,
   { id }: { id: string }
 ) {
-  const selectQuery = `id, created_at, payment_method, total_amount, status, profiles(name, address, phone)`;
+  const selectQuery = `id, created_at, payment_method, total_amount, status, profiles:profiles!inner(name, address, mobile)`;
 
   const { data, error } = await client
     .from("orders")

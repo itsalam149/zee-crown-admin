@@ -57,7 +57,7 @@ export default function InvoicePdfTemplate({ order }: { order: OrderDetails }) {
 
             {/* margin bottom style is to rectify html2canvas incorrect rendering */}
             <Typography component="span" variant="h2" className="mb-1.5">
-              Zorvex
+              Zee Crown
             </Typography>
           </div>
 
@@ -219,10 +219,10 @@ export default function InvoicePdfTemplate({ order }: { order: OrderDetails }) {
               ? order.coupons.discount_type === "fixed"
                 ? order.coupons.discount_value.toFixed(2)
                 : (
-                    ((order.total_amount - order.shipping_cost) * 100) /
-                      (100 - order.coupons.discount_value) -
-                    (order.total_amount - order.shipping_cost)
-                  ).toFixed(2)
+                  ((order.total_amount - order.shipping_cost) * 100) /
+                  (100 - order.coupons.discount_value) -
+                  (order.total_amount - order.shipping_cost)
+                ).toFixed(2)
               : "0.00"}
           </Typography>
         </div>

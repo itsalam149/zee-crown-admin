@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 
 import {
   Select,
@@ -14,11 +13,10 @@ import {
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import FetchDropdownContainer from "@/components/shared/FetchDropdownContainer";
 
 import { sortToParamsMap, getSortFromParams } from "./sortParams";
-import { createBrowserClient } from "@/lib/supabase/client";
-import { fetchCategoriesDropdown } from "@/services/categories";
+
+const categories = ["Medicines", "Perfumes", "Cosmetics", "Food"];
 
 export default function ProductFilters() {
   const router = useRouter();
@@ -28,16 +26,6 @@ export default function ProductFilters() {
     search: searchParams.get("search") || "",
     category: searchParams.get("category") || "",
     sort: getSortFromParams(searchParams) || "",
-  });
-
-  const {
-    data: categories,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["categories", "dropdown"],
-    queryFn: () => fetchCategoriesDropdown(createBrowserClient()),
-    staleTime: 5 * 60 * 1000,
   });
 
   const handleFilter = (e: React.FormEvent) => {
@@ -87,24 +75,12 @@ export default function ProductFilters() {
           </SelectTrigger>
 
           <SelectContent>
-            <FetchDropdownContainer
-              isLoading={isLoading}
-              isError={isError}
-              errorMessage="Failed to load categories"
-            >
-              <SelectItem key="all" value="all">
-                All Categories
+            <SelectItem value="all">All Categories</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category}
               </SelectItem>
-
-              {!isLoading &&
-                !isError &&
-                categories &&
-                categories!.map((category) => (
-                  <SelectItem key={category.slug} value={category.slug}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-            </FetchDropdownContainer>
+            ))}
           </SelectContent>
         </Select>
 
@@ -120,18 +96,8 @@ export default function ProductFilters() {
             <SelectItem value="none">No Sort</SelectItem>
             <SelectItem value="lowest-first">Price: Low to High</SelectItem>
             <SelectItem value="highest-first">Price: High to Low</SelectItem>
-            <SelectItem value="published">Published</SelectItem>
-            <SelectItem value="unpublished">Unpublished</SelectItem>
-            <SelectItem value="status-selling">Status - Selling</SelectItem>
-            <SelectItem value="status-out-of-stock">
-              Status - Out of Stock
-            </SelectItem>
             <SelectItem value="date-added-asc">Date Added (Asc)</SelectItem>
             <SelectItem value="date-added-desc">Date Added (Desc)</SelectItem>
-            <SelectItem value="date-updated-asc">Date Updated (Asc)</SelectItem>
-            <SelectItem value="date-updated-desc">
-              Date Updated (Desc)
-            </SelectItem>
           </SelectContent>
         </Select>
 

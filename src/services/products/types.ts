@@ -9,11 +9,11 @@ export type Product = {
   description: string | null;
   price: number;
   image_url: string | null;
-  category: "Medicines" | "Perfumes" | "Cosmetics" | "Food" | null;
-  created_at: string | null;
-  stock: number | null;
+  category: string | null;
+  created_at: string;
+  stock: number;
   expiry_date: string | null; // ISO date string
-  prescription_required: boolean | null;
+  prescription_required: boolean;
 };
 
 export interface FetchProductsParams {

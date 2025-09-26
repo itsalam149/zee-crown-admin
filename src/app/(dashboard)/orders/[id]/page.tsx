@@ -80,7 +80,7 @@ export default async function Order({ params: { id } }: PageParams) {
                   variant="h2"
                   className="text-card-foreground print:text-black"
                 >
-                  Zorvex
+                  Zee Crown
                 </Typography>
               </div>
 

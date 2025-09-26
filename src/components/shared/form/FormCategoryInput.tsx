@@ -1,7 +1,6 @@
 "use client";
 
 import { forwardRef, Ref } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Control, FieldValues, Path } from "react-hook-form";
 
 import {
@@ -19,9 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { createBrowserClient } from "@/lib/supabase/client";
-import { fetchCategoriesDropdown } from "@/services/categories";
-import FetchDropdownContainer from "@/components/shared/FetchDropdownContainer";
+const categories = ["Medicines", "Perfumes", "Cosmetics", "Food"];
 
 type FormCategoryInputProps<TFormData extends FieldValues> = {
   control: Control<TFormData>;
@@ -36,16 +33,6 @@ const FormCategoryInput = forwardRef(function FormCategoryInputRender<
   { control, name, label, container }: FormCategoryInputProps<TFormData>,
   ref: Ref<HTMLButtonElement>
 ) {
-  const {
-    data: categories,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["categories", "dropdown"],
-    queryFn: () => fetchCategoriesDropdown(createBrowserClient()),
-    staleTime: 5 * 60 * 1000,
-  });
-
   return (
     <FormField
       control={control}
@@ -68,24 +55,12 @@ const FormCategoryInput = forwardRef(function FormCategoryInputRender<
               </FormControl>
 
               <SelectContent portalContainer={container}>
-                <FetchDropdownContainer
-                  isLoading={isLoading}
-                  isError={isError}
-                  errorMessage="Failed to load categories"
-                >
-                  <SelectItem key="all" value="all">
-                    All Categories
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
                   </SelectItem>
-
-                  {!isLoading &&
-                    !isError &&
-                    categories &&
-                    categories!.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                </FetchDropdownContainer>
+                ))}
               </SelectContent>
             </Select>
 

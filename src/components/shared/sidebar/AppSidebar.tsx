@@ -28,7 +28,7 @@ export default function AppSidebar() {
               )}
             >
               <FaBagShopping className="size-6 text-primary mb-1 flex-shrink-0" />
-              <Typography component="span">Zorvex</Typography>
+              <Typography component="span">Zee Crown</Typography>
             </Link>
 
             <ul className="pt-6 flex flex-col gap-y-2">
@@ -41,7 +41,7 @@ export default function AppSidebar() {
                       buttonVariants({ variant: "ghost" }),
                       "relative w-full justify-start px-5 py-4 gap-x-2.5 [&_svg]:size-6 [&_svg]:flex-shrink-0 font-medium text-base focus-visible:bg-accent focus-visible:text-accent-foreground",
                       pathname === navItem.url &&
-                        "bg-accent text-accent-foreground after:content-[''] after:absolute after:top-0 after:left-0 after:h-full after:w-1 after:bg-primary after:rounded-r-lg"
+                      "bg-accent text-accent-foreground after:content-[''] after:absolute after:top-0 after:left-0 after:h-full after:w-1 after:bg-primary after:rounded-r-lg"
                     )}
                   >
                     {navItem.icon} {navItem.title}

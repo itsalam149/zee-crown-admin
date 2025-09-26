@@ -21,7 +21,7 @@ export async function fetchOrders(
     endDate,
   }: FetchOrdersParams
 ): Promise<FetchOrdersResponse> {
-  let query = client.from("orders").select("*, profiles(name)", { count: "exact" });
+  let query = client.from("orders").select("*, profiles!inner(name)", { count: "exact" });
 
   if (search) {
     query = query.ilike("profiles.name", `%${search}%`);
@@ -63,7 +63,7 @@ export async function fetchOrderDetails(
   client: SupabaseClient<Database>,
   { id }: { id: string }
 ) {
-  const selectQuery = `*, profiles(name, email), order_items(id, order_id, product_id, qty, price, products(name))`;
+  const selectQuery = `*, profiles:profiles!inner(name, email), order_items(id, order_id, product_id, qty, price, products(name))`;
 
   const { data, error } = await client
     .from("orders")
