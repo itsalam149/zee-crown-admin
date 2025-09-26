@@ -4,37 +4,41 @@ import { HiOutlineSquare3Stack3D, HiCalendarDays } from "react-icons/hi2";
 import { cn } from "@/lib/utils";
 import Typography from "@/components/ui/typography";
 import { DashboardCard } from "@/types/card";
+import { getSalesOverview } from "@/actions/orders/getSalesOverview";
+import { formatAmount } from "@/helpers/formatAmount";
 
-export default function SalesOverview() {
+export default async function SalesOverview() {
+  const sales = await getSalesOverview();
+
   const cards: DashboardCard[] = [
     {
       icon: <HiOutlineSquare3Stack3D />,
       title: "Today Orders",
-      value: "$897.40",
+      value: formatAmount(sales.today),
       className: "bg-teal-600",
     },
     {
       icon: <HiOutlineSquare3Stack3D />,
       title: "Yesterday Orders",
-      value: "$679.93",
+      value: formatAmount(sales.yesterday),
       className: "bg-orange-400",
     },
     {
       icon: <HiOutlineRefresh />,
       title: "This Month",
-      value: "$13146.96",
+      value: formatAmount(sales.thisMonth),
       className: "bg-blue-500",
     },
     {
       icon: <HiCalendarDays />,
       title: "Last Month",
-      value: "$31964.92",
+      value: formatAmount(sales.lastMonth),
       className: "bg-cyan-600",
     },
     {
       icon: <HiCalendarDays />,
       title: "All-Time Sales",
-      value: "$626513.05",
+      value: formatAmount(sales.allTime),
       className: "bg-emerald-600",
     },
   ];

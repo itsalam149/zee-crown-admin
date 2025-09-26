@@ -10,7 +10,7 @@ const ACCEPTED_IMAGE_TYPES = [
 ];
 
 const fileSchema = z
-  .instanceof(File, { message: "Product image is required" })
+  .instanceof(File)
   .refine(
     (file) => file.size <= MAX_FILE_SIZE,
     `File size must be less than ${MAX_FILE_SIZE_MB}MB`
@@ -30,8 +30,10 @@ export const productFormSchema = z
       .string()
       .min(1, { message: "Product description is required" })
       .max(1000, "Product description must be 1000 characters or less"),
-    image: z.union([fileSchema, z.string().url()]),
-    category: z.string().optional(),
+    image: z.union([fileSchema, z.string().url()]).optional().nullable(),
+    category: z.enum(["Medicines", "Perfumes", "Cosmetics", "Food"], {
+      required_error: "Category is required",
+    }),
     price: z.coerce
       .number({ invalid_type_error: "Price must be a number" })
       .positive({ message: "Price must be greater than zero" })
@@ -50,11 +52,11 @@ export const productFormSchema = z
         "Invalid date format"
       ),
     prescriptionRequired: z.coerce.boolean().optional(),
-  })
+  });
 
 export const productBulkFormSchema = z
   .object({
-    category: z.string().optional(),
+    category: z.enum(["Medicines", "Perfumes", "Cosmetics", "Food"]).optional(),
   })
   .superRefine((data, ctx) => {
     if (typeof data.category === "undefined") {

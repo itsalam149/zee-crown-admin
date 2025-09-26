@@ -39,6 +39,7 @@ export interface FetchOrdersResponse {
 
 export type OrderDetails = Order & {
   order_items: Array<{
+    id: number;
     order_id: number;
     product_id: number;
     qty: number;
@@ -55,4 +56,12 @@ export type OrdersExport = {
   payment_method: string;
   status: string;
   created_at: string;
+};
+
+export type SalesOverview = {
+  today: number;
+  yesterday: number;
+  thisMonth: number;
+  lastMonth: number;
+  allTime: number;
 };

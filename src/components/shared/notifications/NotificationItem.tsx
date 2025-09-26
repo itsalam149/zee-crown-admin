@@ -11,7 +11,7 @@ import Typography from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { Notification } from "@/services/notifications/types";
 import { deleteNotification } from "@/services/notifications";
-import { createBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Props = {
   notification: Notification;
@@ -26,7 +26,7 @@ export default function NotificationItem({ notification }: Props) {
     isError,
   } = useMutation({
     mutationFn: () =>
-      deleteNotification(createBrowserClient(), {
+      deleteNotification(getSupabaseBrowserClient(), {
         notificationId: notification.id,
       }),
     onSuccess: () => {
@@ -53,7 +53,7 @@ export default function NotificationItem({ notification }: Props) {
             component="p"
             className="text-[0.8125rem] md:text-[0.8125rem] whitespace-pre-line mb-2 sm:mb-1.5"
           >
-            {notification.message}
+            {notification.title}
           </Typography>
 
           <div className="flex items-center gap-x-2">

@@ -6,6 +6,7 @@ import { createServerActionClient } from "@/lib/supabase/server-action";
 import { productFormSchema } from "@/app/(dashboard)/products/_components/form/schema";
 import { formatValidationErrors } from "@/helpers/formatValidationErrors";
 import { ProductServerActionResponse } from "@/types/server-action";
+import { compressImage } from "@/helpers/compressImage";
 
 export async function editProduct(
   productId: string,
@@ -37,6 +38,8 @@ export async function editProduct(
   let imageUrl: string | undefined;
 
   if (image instanceof File && image.size > 0) {
+    const compressedImage = await compressImage(image);
+
     const { data: oldProductData, error: fetchError } = await supabase
       .from("products")
       .select("image_url, name")
@@ -50,7 +53,7 @@ export async function editProduct(
 
     const oldImageUrl = oldProductData.image_url;
 
-    const fileExt = image.name.split(".").pop();
+    const fileExt = compressedImage.name.split(".").pop();
     const safeName = String(oldProductData.name || productData.name)
       .toLowerCase()
       .replace(/\s+/g, "-")
@@ -59,7 +62,7 @@ export async function editProduct(
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("assets")
-      .upload(fileName, image);
+      .upload(fileName, compressedImage);
 
     if (uploadError) {
       console.error("Image upload failed:", uploadError);

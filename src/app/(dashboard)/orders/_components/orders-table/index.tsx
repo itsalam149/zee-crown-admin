@@ -10,7 +10,7 @@ import TableError from "@/components/shared/table/TableError";
 
 import { getSearchParams } from "@/helpers/getSearchParams";
 import { fetchOrders } from "@/services/orders";
-import { createBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthorization } from "@/hooks/use-authorization";
 
 export default function RecentOrders() {
@@ -36,7 +36,7 @@ export default function RecentOrders() {
       endDate,
     ],
     queryFn: () =>
-      fetchOrders(createBrowserClient(), {
+      fetchOrders(getSupabaseBrowserClient(), {
         page,
         limit,
         search,

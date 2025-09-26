@@ -6,7 +6,7 @@ import Typography from "@/components/ui/typography";
 import NotificationItem from "./NotificationItem";
 import NotificationItemSkeleton from "./NotificationItemSkeleton";
 import { fetchNotifications } from "@/services/notifications";
-import { createBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export default function NotificationContent() {
   const {
@@ -15,7 +15,7 @@ export default function NotificationContent() {
     isError,
   } = useQuery({
     queryKey: ["notifications"],
-    queryFn: () => fetchNotifications(createBrowserClient()),
+    queryFn: () => fetchNotifications(getSupabaseBrowserClient()),
   });
 
   if (isLoading) {

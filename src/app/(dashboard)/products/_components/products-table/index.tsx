@@ -10,7 +10,7 @@ import TableError from "@/components/shared/table/TableError";
 
 import { getSearchParams } from "@/helpers/getSearchParams";
 import { fetchProducts } from "@/services/products";
-import { createBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { RowSelectionProps } from "@/types/data-table";
 import { useAuthorization } from "@/hooks/use-authorization";
 
@@ -20,7 +20,7 @@ export default function AllProducts({
 }: RowSelectionProps) {
   const { hasPermission } = useAuthorization();
   const columns = getColumns({ hasPermission });
-  const { page, limit, search, category, price, published, status, date } =
+  const { page, limit, search, category, price, date } =
     getSearchParams(useSearchParams());
 
   const {
@@ -36,19 +36,15 @@ export default function AllProducts({
       search,
       category,
       price,
-      published,
-      status,
       date,
     ],
     queryFn: () =>
-      fetchProducts(createBrowserClient(), {
+      fetchProducts(getSupabaseBrowserClient(), {
         page,
         limit,
         search,
         category,
         priceSort: price,
-        status,
-        published,
         dateSort: date,
       }),
     placeholderData: keepPreviousData,

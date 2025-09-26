@@ -2,15 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createServerActionClient } from "@/lib/supabase/server-action";
+import { getSupabaseServerActionClient } from "@/lib/supabase/server-action";
 import { ServerActionResponse } from "@/types/server-action";
 import { OrderStatus } from "@/services/orders/types";
 
 export async function changeOrderStatus(
-  orderId: string,
+  orderId: number,
   newOrderStatus: OrderStatus
 ): Promise<ServerActionResponse> {
-  const supabase = createServerActionClient();
+  const supabase = getSupabaseServerActionClient();
 
   const { error: dbError } = await supabase
     .from("orders")

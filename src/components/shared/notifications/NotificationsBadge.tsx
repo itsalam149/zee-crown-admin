@@ -1,11 +1,11 @@
-  "use client";
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 
 import { cn } from "@/lib/utils";
 import Typography from "@/components/ui/typography";
 import { fetchNotificationsCount } from "@/services/notifications";
-import { createBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const NotificationsBadge = () => {
   const {
@@ -14,7 +14,7 @@ const NotificationsBadge = () => {
     isError,
   } = useQuery({
     queryKey: ["notifications", "notifications-count"],
-    queryFn: () => fetchNotificationsCount(createBrowserClient()),
+    queryFn: () => fetchNotificationsCount(getSupabaseBrowserClient()),
   });
 
   if (isLoading || isError || !notificationCount) return null;
