@@ -1,12 +1,12 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import imageCompression from 'browser-image-compression'
 import CustomSelect from '@/components/CustomSelect'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { createProduct } from '../actions'
 
 const categoryOptions = [
     { value: 'medicine', label: 'Medicine' },
@@ -18,15 +18,12 @@ const categoryOptions = [
 type Category = (typeof categoryOptions)[number]['value']
 
 export default function NewProductPage() {
-    const router = useRouter()
     const supabase = createClient()
 
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        price: '',
-        category: 'medicine' as Category,
-    })
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [price, setPrice] = useState('');
+    const [category, setCategory] = useState<Category>('medicine');
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [uploadError, setUploadError] = useState<string | null>(null)
@@ -35,18 +32,6 @@ export default function NewProductPage() {
         if (e.target.files?.[0]) {
             setImageFile(e.target.files[0])
             setUploadError(null)
-        }
-    }
-
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-        const { name, value } = e.target
-        if (name === 'price') {
-            const sanitizedValue = value.replace(/[^0-9.]/g, '')
-            setFormData((prev) => ({ ...prev, price: sanitizedValue }))
-        } else {
-            setFormData((prev) => ({ ...prev, [name]: value }))
         }
     }
 
@@ -60,7 +45,6 @@ export default function NewProductPage() {
         setUploadError(null)
 
         try {
-            // compress image
             const options = {
                 maxSizeMB: 0.3,
                 maxWidthOrHeight: 1280,
@@ -68,7 +52,6 @@ export default function NewProductPage() {
             }
             const compressedFile = await imageCompression(imageFile, options)
 
-            // upload to storage
             const filePath = `public/${Date.now()}_${compressedFile.name}`
             const { data: uploadData, error: uploadErr } = await supabase.storage
                 .from('product_images')
@@ -78,27 +61,25 @@ export default function NewProductPage() {
                 throw uploadErr ?? new Error('File upload failed')
             }
 
-            // get public url
             const { data: urlData } = supabase.storage
                 .from('product_images')
                 .getPublicUrl(uploadData.path)
 
-            const dataToInsert = {
-                ...formData,
-                price: parseFloat(formData.price) || 0,
-                image_url: urlData.publicUrl,
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('description', description);
+            formData.append('price', price);
+            formData.append('category', category);
+            formData.append('image_url', urlData.publicUrl);
+
+            const result = await createProduct(formData);
+
+            if (result?.error) {
+                throw new Error(result.error);
             }
 
-            const { error: insertError } = await supabase
-                .from('products')
-                .insert([dataToInsert])
-
-            if (insertError) throw insertError
-
-            router.push('/dashboard/products')
-            router.refresh()
         } catch (err: any) {
-            setUploadError(`Upload Failed: ${err.message}`)
+            setUploadError(`Operation Failed: ${err.message}`)
         } finally {
             setIsSubmitting(false)
         }
@@ -107,7 +88,6 @@ export default function NewProductPage() {
     return (
         <div className="min-h-screen bg-black text-gray-300 p-6 md:p-12">
             <div className="max-w-4xl mx-auto">
-                {/* back button */}
                 <div className="mb-8">
                     <Link
                         href="/dashboard/products"
@@ -124,35 +104,29 @@ export default function NewProductPage() {
                     className="p-8 space-y-8 backdrop-blur-lg bg-black/30 rounded-2xl border border-green-500/20 shadow-lg shadow-green-900/20"
                 >
                     <div className="space-y-2">
-                        <label
-                            htmlFor="name"
-                            className="block text-sm font-semibold text-gray-300"
-                        >
+                        <label htmlFor="name" className="block text-sm font-semibold text-gray-300">
                             Product Name
                         </label>
                         <input
                             id="name"
                             name="name"
                             type="text"
-                            value={formData.name}
-                            onChange={handleChange}
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                             className="w-full bg-black/30 border-2 border-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                             required
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label
-                            htmlFor="description"
-                            className="block text-sm font-semibold text-gray-300"
-                        >
+                        <label htmlFor="description" className="block text-sm font-semibold text-gray-300">
                             Description
                         </label>
                         <textarea
                             id="description"
                             name="description"
-                            value={formData.description}
-                            onChange={handleChange}
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
                             rows={5}
                             className="w-full bg-black/30 border-2 border-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                         />
@@ -160,10 +134,7 @@ export default function NewProductPage() {
 
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div className="space-y-2">
-                            <label
-                                htmlFor="price"
-                                className="block text-sm font-semibold text-gray-300"
-                            >
+                            <label htmlFor="price" className="block text-sm font-semibold text-gray-300">
                                 Price
                             </label>
                             <input
@@ -171,8 +142,8 @@ export default function NewProductPage() {
                                 name="price"
                                 type="text"
                                 inputMode="decimal"
-                                value={formData.price}
-                                onChange={handleChange}
+                                value={price}
+                                onChange={(e) => setPrice(e.target.value.replace(/[^0-9.]/g, ''))}
                                 placeholder="e.g., 1250.50"
                                 className="w-full bg-black/30 border-2 border-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                                 required
@@ -180,31 +151,20 @@ export default function NewProductPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label
-                                htmlFor="category"
-                                className="block text-sm font-semibold text-gray-300"
-                            >
+                            <label htmlFor="category" className="block text-sm font-semibold text-gray-300">
                                 Category
                             </label>
                             <CustomSelect
                                 placeholder="Select Category"
                                 options={categoryOptions}
-                                value={formData.category}
-                                onChange={(value) =>
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        category: value as Category,
-                                    }))
-                                }
+                                value={category}
+                                onChange={(value) => setCategory(value as Category)}
                             />
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <label
-                            htmlFor="image_file"
-                            className="block text-sm font-semibold text-gray-300"
-                        >
+                        <label htmlFor="image_file" className="block text-sm font-semibold text-gray-300">
                             Product Image
                         </label>
                         <input
