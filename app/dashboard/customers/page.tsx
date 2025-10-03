@@ -1,12 +1,10 @@
-// app/dashboard/customers/page.tsx
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import { Users, Eye } from 'lucide-react';
+import { Users, Eye, Edit } from 'lucide-react';
+import DeleteCustomerButton from './DeleteCustomerButton';
 
 export default async function CustomersPage() {
     const supabase = createClient();
-
-    // Fetch all profiles from the public.profiles table
     const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
@@ -27,9 +25,7 @@ export default async function CustomersPage() {
             <div className="max-w-screen-2xl mx-auto">
                 <div className="mb-12">
                     <h1 className="text-6xl font-black text-white">Customers</h1>
-                    <p className="text-xl text-gray-400 mt-2">
-                        View and manage your customer profiles
-                    </p>
+                    <p className="text-xl text-gray-400 mt-2">View and manage your customer profiles</p>
                 </div>
 
                 <div className="backdrop-blur-xl bg-black/30 border border-green-500/20 rounded-2xl shadow-2xl shadow-green-900/20 overflow-hidden">
@@ -40,21 +36,26 @@ export default async function CustomersPage() {
                                     <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">Customer Name</th>
                                     <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">Phone Number</th>
                                     <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">View Details</th>
+                                    <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-800">
                                 {profiles?.map((profile) => (
                                     <tr key={profile.id} className="hover:bg-green-950/20 transition-colors">
-                                        <td className="px-10 py-8 whitespace-nowrap text-xl font-medium text-white">
-                                            {profile.full_name || 'N/A'}
-                                        </td>
-                                        <td className="px-10 py-8 whitespace-nowrap text-xl text-gray-300">
-                                            {profile.phone_number || 'N/A'}
-                                        </td>
+                                        <td className="px-10 py-8 whitespace-nowrap text-xl font-medium text-white">{profile.full_name || 'N/A'}</td>
+                                        <td className="px-10 py-8 whitespace-nowrap text-xl text-gray-300">{profile.phone_number || 'N/A'}</td>
                                         <td className="px-10 py-8 whitespace-nowrap">
                                             <Link href={`/dashboard/customers/${profile.id}`} className="text-gray-400 hover:text-white transition-colors">
                                                 <Eye size={28} />
                                             </Link>
+                                        </td>
+                                        <td className="px-10 py-8 whitespace-nowrap">
+                                            <div className="flex items-center space-x-6">
+                                                <Link href={`/dashboard/customers/${profile.id}/edit`} className="text-gray-400 hover:text-green-500 transition-colors">
+                                                    <Edit size={28} />
+                                                </Link>
+                                                <DeleteCustomerButton customerId={profile.id} />
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import { LayoutDashboard, Package, ShoppingCart, Users, BarChart2 } from 'lucide-react'; // Added 'Users'
-import LogoutButton from '@/components/LogoutButton'; // Corrected path
-import Image from 'next/image';
+import { LayoutDashboard, Package, ShoppingCart, Users, Truck, Bell } from 'lucide-react';
+import LogoutButton from '@/components/LogoutButton';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -20,7 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             </div>
                             <div>
                                 <h1 className="text-xl font-black text-white">Admin Panel</h1>
-                                <p className="text-green-300/80 text-sm font-medium">E-Commerce</p>
+                                <p className="text-green-300/80 text-sm font-medium">Zee Crown</p>
                             </div>
                         </div>
                         <div className="w-full h-px bg-gradient-to-r from-transparent via-green-500/30 to-transparent"></div>
@@ -30,14 +29,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             <li><Link href="/dashboard" className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"><LayoutDashboard size={22} className="mr-4 text-green-400" /><span className="font-semibold text-lg">Dashboard</span></Link></li>
                             <li><Link href="/dashboard/products" className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"><Package size={22} className="mr-4 text-green-400" /><span className="font-semibold text-lg">Products</span></Link></li>
                             <li><Link href="/dashboard/orders" className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"><ShoppingCart size={22} className="mr-4 text-green-400" /><span className="font-semibold text-lg">Orders</span></Link></li>
-                            {/* --- "CUSTOMERS" LINK ADDED HERE --- */}
                             <li><Link href="/dashboard/customers" className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"><Users size={22} className="mr-4 text-green-400" /><span className="font-semibold text-lg">Customers</span></Link></li>
+                            {/* --- NEW LINKS ADDED --- */}
+                            {/* <li><Link href="/dashboard/shipping-rules" className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"><Truck size={22} className="mr-4 text-green-400" /><span className="font-semibold text-lg">Shipping</span></Link></li> */}
+                            <li><Link href="/dashboard/notifications" className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"><Bell size={22} className="mr-4 text-green-400" /><span className="font-semibold text-lg">Notifications</span></Link></li>
                         </ul>
                     </nav>
                     <div className="mt-auto">
                         <div className="p-4 bg-black/20 backdrop-blur-lg rounded-2xl border border-white/10">
                             <LogoutButton />
-                        </div>
+                        </div>  
                     </div>
                 </div>
             </aside>

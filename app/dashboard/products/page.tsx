@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Plus, Edit, Eye } from 'lucide-react';
 import ProductFilters from './ProductFilters';
 import DeleteProductButton from './DeleteProductButton';
-import ExportButtons from './ExportButtons'; // <-- Import the new component
+import ExportButtons from './ExportButtons';
 
 // Define the Product type here so we can use it for the props
 type Product = {
@@ -17,15 +17,14 @@ type Product = {
     image_url: string | null;
 };
 
-export default async function ProductsPage({
-    searchParams,
-}: {
-    searchParams?: { q?: string; category?: string; sortBy?: string; };
-}) {
+export default async function ProductsPage(props: { searchParams: Promise<{ q?: string; category?: string; sortBy?: string }> }) {
     const supabase = await createClient();
-    const query = searchParams?.q || '';
-    const category = searchParams?.category || '';
-    const sortBy = searchParams?.sortBy || '';
+
+    // ✅ Await searchParams
+    const searchParams = await props.searchParams;
+    const query = searchParams?.q ?? '';
+    const category = searchParams?.category ?? '';
+    const sortBy = searchParams?.sortBy ?? '';
 
     let supabaseQuery = supabase.from('products').select('*');
 
@@ -92,9 +91,7 @@ export default async function ProductsPage({
                         </p>
                     </div>
                     <div className="flex items-center space-x-5">
-                        {/* --- Replaced the static button with the new component --- */}
                         <ExportButtons products={typedProducts} />
-
                         <Link
                             href="/dashboard/products/new"
                             className="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-7 rounded-lg flex items-center space-x-3 transition-colors text-lg shadow-lg shadow-green-600/20"
@@ -128,7 +125,13 @@ export default async function ProductsPage({
                                             <td className="px-10 py-8 whitespace-nowrap">
                                                 <div className="flex items-center space-x-6">
                                                     {product.image_url ? (
-                                                        <Image src={product.image_url} alt={product.name} width={64} height={64} className="w-16 h-16 object-cover rounded-lg border-2 border-green-900/50" />
+                                                        <Image
+                                                            src={product.image_url}
+                                                            alt={product.name}
+                                                            width={64}
+                                                            height={64}
+                                                            className="w-16 h-16 object-cover rounded-lg border-2 border-green-900/50"
+                                                        />
                                                     ) : (
                                                         <div className="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center text-xl font-bold text-gray-500 border-2 border-gray-700">
                                                             {product.name[0]}
@@ -142,7 +145,9 @@ export default async function ProductsPage({
                                                     {product.category}
                                                 </span>
                                             </td>
-                                            <td className="px-10 py-8 whitespace-nowrap text-xl text-gray-300 font-semibold">₹{product.price.toFixed(2)}</td>
+                                            <td className="px-10 py-8 whitespace-nowrap text-xl text-gray-300 font-semibold">
+                                                ₹{product.price.toFixed(2)}
+                                            </td>
                                             <td className="px-10 py-8 whitespace-nowrap">
                                                 <Link href={`/dashboard/products/${product.id}`} className="text-gray-400 hover:text-white transition-colors">
                                                     <Eye size={28} />
@@ -150,7 +155,9 @@ export default async function ProductsPage({
                                             </td>
                                             <td className="px-10 py-8 whitespace-nowrap">
                                                 <div className="flex items-center space-x-6">
-                                                    <Link href={`/dashboard/products/${product.id}/edit`} className="text-gray-400 hover:text-green-500 transition-colors"><Edit size={28} /></Link>
+                                                    <Link href={`/dashboard/products/${product.id}/edit`} className="text-gray-400 hover:text-green-500 transition-colors">
+                                                        <Edit size={28} />
+                                                    </Link>
                                                     <DeleteProductButton productId={product.id} />
                                                 </div>
                                             </td>
@@ -184,8 +191,9 @@ export default async function ProductsPage({
             </div>
 
             <div className="animations-global">
-                <style dangerouslySetInnerHTML={{
-                    __html: `
+                <style
+                    dangerouslySetInnerHTML={{
+                        __html: `
                     @keyframes fade-in-up {
                         from { opacity: 0; transform: translateY(30px); }
                         to { opacity: 1; transform: translateY(0); }
@@ -197,7 +205,9 @@ export default async function ProductsPage({
                     .animation-delay-200 { animation-delay: 200ms; }
                     .animation-delay-400 { animation-delay: 400ms; }
                     .animation-delay-2000 { animation-delay: 2s; }
-                `}} />
+                `,
+                    }}
+                />
             </div>
         </div>
     );
