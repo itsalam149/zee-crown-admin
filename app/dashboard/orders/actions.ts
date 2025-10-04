@@ -5,10 +5,10 @@ import { revalidatePath } from "next/cache";
 
 /**
  * Updates the status of a specific order.
- * This is the most common and essential update operation.
  */
 export async function updateOrderStatus(formData: FormData) {
-    const supabase = createClient();
+    // ✅ Await the async Supabase server client
+    const supabase = await createClient();
 
     const orderId = formData.get('orderId') as string;
     const newStatus = formData.get('newStatus') as string;
@@ -34,29 +34,33 @@ export async function updateOrderStatus(formData: FormData) {
 
 /**
  * Deletes an order and its associated items.
- * Use this carefully! It's better to set an order's status to 'cancelled'.
- * This is mainly useful for removing test data or truly erroneous orders.
  */
 export async function deleteOrder(formData: FormData) {
-    const supabase = createClient();
+    // ✅ Await the async Supabase server client
+    const supabase = await createClient();
+
     const orderId = formData.get('orderId') as string;
 
     if (!orderId) {
         return { error: 'Order ID is missing.' };
     }
 
-    // Your Supabase schema should have cascading deletes set up so that
-    // deleting an order also deletes its corresponding `order_items`.
-    const { error } = await supabase
-        .from('orders')
-        .delete()
-        .eq('id', orderId);
+    try {
+        // Assumes cascading delete is set up in your Supabase schema
+        const { error } = await supabase
+            .from('orders')
+            .delete()
+            .eq('id', orderId);
 
-    if (error) {
-        console.error("Error deleting order:", error);
-        return { error: 'Failed to delete order.' };
+        if (error) {
+            console.error("Error deleting order:", error);
+            return { error: 'Failed to delete order.' };
+        }
+
+        revalidatePath('/dashboard/orders');
+        return { success: 'Order deleted successfully.' };
+    } catch (err) {
+        console.error("Unexpected error deleting order:", err);
+        return { error: 'Failed to delete order due to unexpected error.' };
     }
-
-    revalidatePath('/dashboard/orders');
-    return { success: 'Order deleted successfully.' };
 }
