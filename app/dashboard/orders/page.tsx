@@ -18,7 +18,8 @@ type OrderWithDetails = {
 };
 
 export default async function OrdersPage() {
-    const supabase = createClient();
+    // ✅ Await the Supabase client since createClient() is now async
+    const supabase = await createClient();
 
     // Fetch orders with items + products
     const { data: ordersData, error: ordersError } = await supabase
@@ -42,16 +43,17 @@ export default async function OrdersPage() {
     }
 
     let orders: OrderWithDetails[] = [];
+
     if (ordersData && ordersData.length > 0) {
         const userIds = [...new Set(ordersData.map(order => order.user_id).filter(Boolean))];
 
-        // Fetch customer names
+        // ✅ Fetch customer names
         const { data: profilesData } = await supabase
             .from('profiles')
             .select('id, full_name')
             .in('id', userIds as any[]);
 
-        // Fetch mobile numbers (prefer default addresses)
+        // ✅ Fetch mobile numbers (prefer default addresses)
         const { data: addressesData } = await supabase
             .from('addresses')
             .select('user_id, mobile_number, is_default')
@@ -61,10 +63,11 @@ export default async function OrdersPage() {
         const profilesMap = new Map(profilesData?.map(p => [p.id, p.full_name]));
         const addressesMap = new Map(
             addressesData
-                ?.sort((a, b) => (b.is_default ? 1 : 0) - (a.is_default ? 1 : 0)) // put default first
+                ?.sort((a, b) => (b.is_default ? 1 : 0) - (a.is_default ? 1 : 0))
                 .map(addr => [addr.user_id, addr.mobile_number])
         );
 
+        // Merge order data with profile & address info
         orders = ordersData.map(order => ({
             id: order.id,
             created_at: order.created_at,
@@ -72,7 +75,7 @@ export default async function OrdersPage() {
             status: order.status,
             order_items: order.order_items as any,
             customer_name: profilesMap.get(order.user_id) || 'N/A',
-            mobile_number: addressesMap.get(order.user_id) || null
+            mobile_number: addressesMap.get(order.user_id) || null,
         }));
     }
 
@@ -81,9 +84,7 @@ export default async function OrdersPage() {
             <div className="max-w-screen-2xl mx-auto">
                 <div className="mb-12">
                     <h1 className="text-6xl font-black text-white">Orders</h1>
-                    <p className="text-xl text-gray-400 mt-2">
-                        View and manage customer orders
-                    </p>
+                    <p className="text-xl text-gray-400 mt-2">View and manage customer orders</p>
                 </div>
 
                 <div className="backdrop-blur-xl bg-black/30 border border-green-500/20 rounded-2xl shadow-2xl shadow-green-900/20 overflow-hidden">

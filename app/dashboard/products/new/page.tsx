@@ -1,12 +1,11 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
-import { useState } from 'react'
-import imageCompression from 'browser-image-compression'
+import { Fragment, useState } from 'react'
 import CustomSelect from '@/components/CustomSelect'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { createProduct } from '../actions'
+import { Dialog, Transition } from '@headlessui/react'
 
 const categoryOptions = [
     { value: 'medicine', label: 'Medicine' },
@@ -18,15 +17,15 @@ const categoryOptions = [
 type Category = (typeof categoryOptions)[number]['value']
 
 export default function NewProductPage() {
-    const supabase = createClient()
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
     const [category, setCategory] = useState<Category>('medicine');
     const [imageFile, setImageFile] = useState<File | null>(null)
-    const [isSubmitting, setIsSubmitting] = useState(false)
     const [uploadError, setUploadError] = useState<string | null>(null)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [showSuccess, setShowSuccess] = useState(false)
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
@@ -35,57 +34,9 @@ export default function NewProductPage() {
         }
     }
 
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!imageFile) {
-            setUploadError('Please select an image for the product.')
-            return
-        }
-        setIsSubmitting(true)
-        setUploadError(null)
+    // No client-side submit handler; the form posts directly to the server action.
 
-        try {
-            const options = {
-                maxSizeMB: 0.3,
-                maxWidthOrHeight: 1280,
-                useWebWorker: true,
-            }
-            const compressedFile = await imageCompression(imageFile, options)
-
-            const filePath = `public/${Date.now()}_${compressedFile.name}`
-            const { data: uploadData, error: uploadErr } = await supabase.storage
-                .from('product_images')
-                .upload(filePath, compressedFile)
-
-            if (uploadErr || !uploadData?.path) {
-                throw uploadErr ?? new Error('File upload failed')
-            }
-
-            const { data: urlData } = supabase.storage
-                .from('product_images')
-                .getPublicUrl(uploadData.path)
-
-            const formData = new FormData();
-            formData.append('name', name);
-            formData.append('description', description);
-            formData.append('price', price);
-            formData.append('category', category);
-            formData.append('image_url', urlData.publicUrl);
-
-            const result = await createProduct(formData);
-
-            if (result?.error) {
-                throw new Error(result.error);
-            }
-
-        } catch (err: any) {
-            setUploadError(`Operation Failed: ${err.message}`)
-        } finally {
-            setIsSubmitting(false)
-        }
-    }
-
-    return (
+    return (<>
         <div className="min-h-screen bg-black text-gray-300 p-6 md:p-12">
             <div className="max-w-4xl mx-auto">
                 <div className="mb-8">
@@ -100,7 +51,28 @@ export default function NewProductPage() {
 
                 <h1 className="text-5xl font-black text-white mb-8">Add New Product</h1>
                 <form
-                    onSubmit={handleCreate}
+                    action={async (formData: FormData) => {
+                        if (!imageFile) {
+                            setUploadError('Please select an image for the product.')
+                            return
+                        }
+                        setIsSubmitting(true)
+                        formData.set('name', name)
+                        formData.set('description', description)
+                        formData.set('price', price)
+                        formData.set('category', category)
+                        formData.set('image_file', imageFile)
+                        const result = await createProduct(formData)
+                        if (result?.error) {
+                            setUploadError(`Operation Failed: ${result.error}`)
+                            setIsSubmitting(false)
+                            return
+                        }
+                        setShowSuccess(true)
+                        setTimeout(() => {
+                            window.location.href = '/dashboard/products'
+                        }, 1200)
+                    }}
                     className="p-8 space-y-8 backdrop-blur-lg bg-black/30 rounded-2xl border border-green-500/20 shadow-lg shadow-green-900/20"
                 >
                     <div className="space-y-2">
@@ -193,5 +165,57 @@ export default function NewProductPage() {
                 </form>
             </div>
         </div>
-    )
+        {/* Success Modal */}
+        <Transition appear show={showSuccess} as={Fragment}>
+            <Dialog as="div" className="relative z-50" onClose={() => {}}>
+                <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                >
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" aria-hidden="true" />
+                </Transition.Child>
+
+                <div className="fixed inset-0 overflow-y-auto">
+                    <div className="flex min-h-full items-center justify-center p-4 text-center">
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0 scale-95"
+                            enterTo="opacity-100 scale-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100 scale-100"
+                            leaveTo="opacity-0 scale-95"
+                        >
+                            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-black/60 p-6 text-left align-middle shadow-xl transition-all border border-emerald-500/30">
+                                <Dialog.Title as="h3" className="text-lg font-bold leading-6 text-white">
+                                    Product Uploaded
+                                </Dialog.Title>
+                                <div className="mt-2">
+                                    <p className="text-sm text-emerald-300">
+                                        Your product has been uploaded successfully.
+                                    </p>
+                                </div>
+                                <div className="mt-6 flex justify-end">
+                                    <button
+                                        type="button"
+                                        className="inline-flex justify-center rounded-md border border-transparent bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 focus:outline-none"
+                                        onClick={() => {
+                                            window.location.href = '/dashboard/products'
+                                        }}
+                                    >
+                                        View Products
+                                    </button>
+                                </div>
+                            </Dialog.Panel>
+                        </Transition.Child>
+                    </div>
+                </div>
+            </Dialog>
+        </Transition>
+    </>)
 }

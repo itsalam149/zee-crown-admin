@@ -7,7 +7,10 @@ export default function NewNotificationPage() {
         <div className="min-h-screen bg-black text-gray-300 p-6 md:p-12">
             <div className="max-w-4xl mx-auto">
                 <div className="mb-8">
-                    <Link href="/dashboard/notifications" className="inline-flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
+                    <Link
+                        href="/dashboard/notifications"
+                        className="inline-flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
+                    >
                         <ArrowLeft size={20} />
                         <span>Back to Notifications</span>
                     </Link>

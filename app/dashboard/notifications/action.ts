@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from 'next/navigation';
 
 export async function createNotification(formData: FormData) {
-    const supabase = createClient();
+    const supabase = await createClient(); // ✅ Await here
 
     const rawFormData = {
         title: formData.get('title') as string,
@@ -24,7 +24,7 @@ export async function createNotification(formData: FormData) {
 }
 
 export async function updateNotification(formData: FormData) {
-    const supabase = createClient();
+    const supabase = await createClient(); // ✅ Await here
     const id = formData.get('id') as string;
 
     const rawFormData = {
@@ -44,7 +44,7 @@ export async function updateNotification(formData: FormData) {
 }
 
 export async function deleteNotification(formData: FormData) {
-    const supabase = createClient();
+    const supabase = await createClient(); // ✅ Await here
     const id = formData.get('notificationId') as string;
 
     const { error } = await supabase.from('notifications').delete().eq('id', id);

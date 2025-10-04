@@ -17,14 +17,21 @@ type Product = {
     image_url: string | null;
 };
 
-export default async function ProductsPage(props: { searchParams: Promise<{ q?: string; category?: string; sortBy?: string }> }) {
-    const supabase = await createClient();
+// ✅ Make the page component async and await searchParams
+export default async function ProductsPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ q?: string; category?: string; sortBy?: string }>;
+}) {
+    // Await searchParams (Next.js 15 requirement)
+    const safeParams = await searchParams;
 
-    // ✅ Await searchParams
-    const searchParams = await props.searchParams;
-    const query = searchParams?.q ?? '';
-    const category = searchParams?.category ?? '';
-    const sortBy = searchParams?.sortBy ?? '';
+    const query = safeParams?.q ?? '';
+    const category = safeParams?.category ?? '';
+    const sortBy = safeParams?.sortBy ?? '';
+
+    // ✅ Await Supabase client if it uses async cookies
+    const supabase = await createClient();
 
     let supabaseQuery = supabase.from('products').select('*');
 
@@ -69,7 +76,9 @@ export default async function ProductsPage(props: { searchParams: Promise<{ q?: 
         return (
             <div className="min-h-screen bg-black p-8 flex items-center justify-center">
                 <div className="bg-gray-900 border border-red-700/50 rounded-lg p-8">
-                    <p className="text-red-400 font-semibold text-lg">Error loading products: {error.message}</p>
+                    <p className="text-red-400 font-semibold text-lg">
+                        Error loading products: {error.message}
+                    </p>
                 </div>
             </div>
         );
@@ -86,9 +95,7 @@ export default async function ProductsPage(props: { searchParams: Promise<{ q?: 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 animate-fade-in-up">
                     <div>
                         <h1 className="text-6xl font-black text-white">Products</h1>
-                        <p className="text-xl text-gray-400 mt-2">
-                            Manage and view your inventory
-                        </p>
+                        <p className="text-xl text-gray-400 mt-2">Manage and view your inventory</p>
                     </div>
                     <div className="flex items-center space-x-5">
                         <ExportButtons products={typedProducts} />
@@ -194,18 +201,18 @@ export default async function ProductsPage(props: { searchParams: Promise<{ q?: 
                 <style
                     dangerouslySetInnerHTML={{
                         __html: `
-                    @keyframes fade-in-up {
-                        from { opacity: 0; transform: translateY(30px); }
-                        to { opacity: 1; transform: translateY(0); }
-                    }
-                    .animate-fade-in-up {
-                        animation: fade-in-up 0.8s ease-out forwards;
-                        opacity: 0;
-                    }
-                    .animation-delay-200 { animation-delay: 200ms; }
-                    .animation-delay-400 { animation-delay: 400ms; }
-                    .animation-delay-2000 { animation-delay: 2s; }
-                `,
+                            @keyframes fade-in-up {
+                                from { opacity: 0; transform: translateY(30px); }
+                                to { opacity: 1; transform: translateY(0); }
+                            }
+                            .animate-fade-in-up {
+                                animation: fade-in-up 0.8s ease-out forwards;
+                                opacity: 0;
+                            }
+                            .animation-delay-200 { animation-delay: 200ms; }
+                            .animation-delay-400 { animation-delay: 400ms; }
+                            .animation-delay-2000 { animation-delay: 2s; }
+                        `,
                     }}
                 />
             </div>

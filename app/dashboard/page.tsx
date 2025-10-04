@@ -1,12 +1,14 @@
+// app/dashboard/page.tsx
 import { createClient } from '@/lib/supabase/server';
 import { StatCard } from './StatCard';
-import Image from 'next/image'; // Import Image for potential future use in avatars
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default async function DashboardPage() {
-    const supabase = createClient();
+    // Await the server-side Supabase client
+    const supabase = await createClient();
 
-    // Your data fetching is already correct and fetches recent orders
+    // Fetch data using Promise.all
     const [
         { count: productCount },
         { count: orderCount },
@@ -18,7 +20,10 @@ export default async function DashboardPage() {
         supabase.from('orders').select('*', { count: 'exact', head: true }),
         supabase.from('orders').select('total_price').not('status', 'eq', 'cancelled'),
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('orders').select('id, total_price, status, created_at, profiles(full_name)').order('created_at', { ascending: false }).limit(5),
+        supabase.from('orders')
+            .select('id, total_price, status, created_at, profiles(full_name)')
+            .order('created_at', { ascending: false })
+            .limit(5),
     ]);
 
     const totalRevenue = revenueData?.reduce((acc, order) => acc + (order.total_price || 0), 0) || 0;
@@ -71,11 +76,9 @@ export default async function DashboardPage() {
                                             <td className="px-8 py-5 whitespace-nowrap">
                                                 <div className="flex items-center">
                                                     <div className="w-11 h-11 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-black font-bold text-base mr-4">
-                                                        {/* @ts-ignore */}
                                                         {(order.profiles?.full_name ?? 'N')[0]}
                                                     </div>
                                                     <span className="font-semibold text-white">
-                                                        {/* @ts-ignore */}
                                                         {order.profiles?.full_name ?? 'N/A'}
                                                     </span>
                                                 </div>
