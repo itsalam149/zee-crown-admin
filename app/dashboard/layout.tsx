@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { LayoutDashboard, Package, ShoppingCart, Users, Truck, Bell } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, Bell } from 'lucide-react';
 import LogoutButton from '@/components/LogoutButton';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -38,7 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <div className="mt-auto">
                         <div className="p-4 bg-black/20 backdrop-blur-lg rounded-2xl border border-white/10">
                             <LogoutButton />
-                        </div>  
+                        </div>
                     </div>
                 </div>
             </aside>

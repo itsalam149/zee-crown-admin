@@ -40,7 +40,7 @@ export default function DeleteOrderButton({ orderId }: { orderId: string }) {
                                             <Dialog.Title as="h3" className="text-lg font-bold leading-6 text-white">Delete Order</Dialog.Title>
                                             <div className="mt-2">
                                                 <p className="text-sm text-gray-400">
-                                                    Are you sure you want to permanently delete this order? For most cases, changing the status to "Cancelled" is recommended. This action cannot be undone.
+                                                    Are you sure you want to permanently delete this order? For most cases, changing the status to &quot;Cancelled&quot; is recommended. This action cannot be undone.
                                                 </p>
                                             </div>
                                         </div>

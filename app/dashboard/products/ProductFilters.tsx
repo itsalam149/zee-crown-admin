@@ -1,5 +1,3 @@
-// app/dashboard/products/ProductFilters.tsx
-
 'use client'
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -39,10 +37,13 @@ export default function ProductFilters() {
     }, [searchParams]);
 
     useEffect(() => {
-        const params = new URLSearchParams(searchParams);
-        debouncedQuery ? params.set('q', debouncedQuery) : params.delete('q');
-        category ? params.set('category', category) : params.delete('category');
-        sortBy ? params.set('sortBy', sortBy) : params.delete('sortBy');
+        const params = new URLSearchParams(searchParams.toString());
+        if (debouncedQuery) params.set('q', debouncedQuery);
+        else params.delete('q');
+        if (category) params.set('category', category);
+        else params.delete('category');
+        if (sortBy) params.set('sortBy', sortBy);
+        else params.delete('sortBy');
         replace(`${pathname}?${params.toString()}`);
     }, [debouncedQuery, category, sortBy, pathname, replace, searchParams]);
 
@@ -64,7 +65,6 @@ export default function ProductFilters() {
                 className="bg-black/30 border-2 border-gray-700 text-white rounded-lg w-full flex-1 px-5 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
 
-            {/* Category Select (static width, rounded, animated) */}
             <CustomSelect
                 placeholder="Category"
                 options={categoryOptions}
@@ -73,7 +73,6 @@ export default function ProductFilters() {
                 className="w-[200px] rounded-lg transition-all duration-300"
             />
 
-            {/* Sort By Select (static width, rounded, animated) */}
             <CustomSelect
                 placeholder="Sort by"
                 options={sortOptions}

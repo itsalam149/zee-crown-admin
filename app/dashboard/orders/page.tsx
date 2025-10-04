@@ -1,34 +1,46 @@
-import { createClient } from '@/lib/supabase/server';
-import { ShoppingCart, Eye } from 'lucide-react';
-import OrderStatusUpdater from './OrderStatusUpdater';
-import Link from 'next/link';
-import DeleteOrderButton from './DeleteOrderButton';
+import { createClient } from '@/lib/supabase/server'
+import { ShoppingCart, Eye } from 'lucide-react'
+import OrderStatusUpdater from './OrderStatusUpdater'
+import Link from 'next/link'
+import DeleteOrderButton from './DeleteOrderButton'
+
+type ProductInfo = {
+    name: string | null
+}
+
+type OrderItem = {
+    quantity: number
+    products: ProductInfo | null
+}
 
 type OrderWithDetails = {
-    id: string;
-    created_at: string;
-    total_price: number;
-    status: string;
-    customer_name: string | null;
-    mobile_number: string | null;
-    order_items: {
-        quantity: number;
-        products: { name: string | null } | null;
-    }[];
-};
+    id: string
+    created_at: string
+    total_price: number
+    status: string
+    customer_name: string
+    mobile_number: string | null
+    order_items: OrderItem[]
+}
 
 export default async function OrdersPage() {
-    // ✅ Await the Supabase client since createClient() is now async
-    const supabase = await createClient();
+    const supabase = await createClient()
 
     // Fetch orders with items + products
     const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select(`
-            id, created_at, total_price, status, user_id,
-            order_items ( quantity, products ( name ) )
+            id,
+            created_at,
+            total_price,
+            status,
+            user_id,
+            order_items (
+                quantity,
+                products ( name )
+            )
         `)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
 
     if (ordersError) {
         return (
@@ -39,44 +51,53 @@ export default async function OrdersPage() {
                     </p>
                 </div>
             </div>
-        );
+        )
     }
 
-    let orders: OrderWithDetails[] = [];
+    let orders: OrderWithDetails[] = []
 
     if (ordersData && ordersData.length > 0) {
-        const userIds = [...new Set(ordersData.map(order => order.user_id).filter(Boolean))];
+        const userIds = [...new Set(ordersData.map(order => order.user_id).filter(Boolean))] as string[]
 
-        // ✅ Fetch customer names
+        // Fetch profiles
         const { data: profilesData } = await supabase
             .from('profiles')
             .select('id, full_name')
-            .in('id', userIds as any[]);
+            .in('id', userIds)
 
-        // ✅ Fetch mobile numbers (prefer default addresses)
+        // Fetch addresses
         const { data: addressesData } = await supabase
             .from('addresses')
             .select('user_id, mobile_number, is_default')
-            .in('user_id', userIds as any[]);
+            .in('user_id', userIds)
 
-        // Create maps for quick lookup
-        const profilesMap = new Map(profilesData?.map(p => [p.id, p.full_name]));
+        // Create lookup maps
+        const profilesMap = new Map(profilesData?.map(p => [p.id, p.full_name]))
         const addressesMap = new Map(
             addressesData
-                ?.sort((a, b) => (b.is_default ? 1 : 0) - (a.is_default ? 1 : 0))
+                ?.sort((a, b) => Number(b.is_default) - Number(a.is_default))
                 .map(addr => [addr.user_id, addr.mobile_number])
-        );
+        )
 
-        // Merge order data with profile & address info
+        // Map orders
         orders = ordersData.map(order => ({
             id: order.id,
             created_at: order.created_at,
             total_price: order.total_price,
             status: order.status,
-            order_items: order.order_items as any,
+            order_items: Array.isArray(order.order_items)
+                ? order.order_items.map(item => {
+                    // Handle the case where products might be an array or object
+                    const product = Array.isArray(item.products) ? item.products[0] : item.products;
+                    return {
+                        quantity: item.quantity,
+                        products: product ? { name: product.name ?? null } : null,
+                    };
+                })
+                : [],
             customer_name: profilesMap.get(order.user_id) || 'N/A',
             mobile_number: addressesMap.get(order.user_id) || null,
-        }));
+        }))
     }
 
     return (
@@ -113,18 +134,13 @@ export default async function OrdersPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-800">
-                                {orders.map((order) => (
+                                {orders.map(order => (
                                     <tr key={order.id} className="hover:bg-green-950/20 transition-colors">
-                                        {/* Customer Info */}
                                         <td className="px-10 py-8 align-top">
-                                            <div className="text-xl font-medium text-white mb-1">
-                                                {order.customer_name}
-                                            </div>
-                                            <div className="text-sm font-mono text-gray-400 mb-3">
-                                                #{order.id.substring(0, 8)}...
-                                            </div>
+                                            <div className="text-xl font-medium text-white mb-1">{order.customer_name}</div>
+                                            <div className="text-sm font-mono text-gray-400 mb-3">#{order.id.substring(0, 8)}...</div>
                                             <ul className="space-y-1 text-gray-400 list-disc list-inside">
-                                                {order.order_items?.map((item, index) => (
+                                                {order.order_items.map((item, index) => (
                                                     <li key={index} className="text-sm">
                                                         {item.quantity} × {item.products?.name || 'Item'}
                                                     </li>
@@ -132,7 +148,6 @@ export default async function OrdersPage() {
                                             </ul>
                                         </td>
 
-                                        {/* Mobile */}
                                         <td className="px-10 py-8 whitespace-nowrap text-lg text-gray-300 align-top">
                                             {order.mobile_number ? (
                                                 <span className="font-mono text-green-400">{order.mobile_number}</span>
@@ -141,22 +156,18 @@ export default async function OrdersPage() {
                                             )}
                                         </td>
 
-                                        {/* Date */}
                                         <td className="px-10 py-8 whitespace-nowrap text-xl text-gray-300 align-top">
                                             {new Date(order.created_at).toLocaleDateString()}
                                         </td>
 
-                                        {/* Total */}
                                         <td className="px-10 py-8 whitespace-nowrap text-xl text-gray-300 font-semibold align-top">
                                             ₹{order.total_price.toFixed(2)}
                                         </td>
 
-                                        {/* Status */}
                                         <td className="px-10 py-8 whitespace-nowrap align-top">
                                             <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
                                         </td>
 
-                                        {/* Actions */}
                                         <td className="px-10 py-8 whitespace-nowrap align-top">
                                             <div className="flex items-center space-x-6">
                                                 <Link
@@ -183,5 +194,5 @@ export default async function OrdersPage() {
                 )}
             </div>
         </div>
-    );
+    )
 }

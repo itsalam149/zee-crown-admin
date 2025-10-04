@@ -4,9 +4,13 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Mail, Phone, Home, ShoppingCart } from "lucide-react";
 
-export default async function ViewCustomerPage({ params }: { params: { id: string } }) {
-    const supabase = await createClient(); // ✅ await the async client
-    const customerId = params.id;
+export default async function ViewCustomerPage({
+    params
+}: {
+    params: Promise<{ id: string }> // Changed: params is now a Promise
+}) {
+    const { id: customerId } = await params; // Added: await the params
+    const supabase = await createClient();
 
     // Fetch profile, addresses, orders, and user in parallel
     const [profileRes, addressesRes, ordersRes, userRes] = await Promise.all([

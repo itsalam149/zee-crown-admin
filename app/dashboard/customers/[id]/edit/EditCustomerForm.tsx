@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react';
+// Make sure this path is correct for your project structure
 import { updateCustomer } from '../../actions';
 
 type Profile = {

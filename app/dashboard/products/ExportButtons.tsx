@@ -41,11 +41,11 @@ export default function ExportButtons({ products }: { products: Product[] }) {
             headers.join(','),
             ...products.map(product =>
                 headers.map(header => {
-                    let value = product[header as keyof Product];
+                    const value = product[header as keyof Product];
                     if (value === null || value === undefined) {
                         return '';
                     }
-                    let stringValue = String(value);
+                    const stringValue = String(value);
                     if (stringValue.includes(',')) {
                         return `"${stringValue}"`;
                     }

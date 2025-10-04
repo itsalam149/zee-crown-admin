@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import NotificationForm from '../../NotificationForm';
 
-export default async function EditNotificationPage(route: any) {
-    // ✅ await the dynamic params object
-    const { params } = await route;
-    const { id } = params;
-
+export default async function EditNotificationPage({
+    params
+}: {
+    params: Promise<{ id: string }> // Changed: params is now a Promise
+}) {
+    const { id } = await params; // Added: await the params
     const supabase = await createClient();
 
     const { data: notification, error } = await supabase
