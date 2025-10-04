@@ -1,26 +1,17 @@
-'use client'
+"use client";
 
-import { createClient } from '@/lib/supabase/client';
-import { LogOut } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { SignOutButton } from "@clerk/nextjs";
+import { LogOut } from "lucide-react";
 
 export default function LogoutButton() {
-    const router = useRouter();
-    const supabase = createClient();
-
-    const handleLogout = async () => {
-        await supabase.auth.signOut();
-        router.push('/login');
-        router.refresh();
-    };
-
     return (
-        <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center space-x-2 px-4 py-3 text-sm font-medium text-red-400 hover:text-white bg-white/5 hover:bg-red-500/20 rounded-xl transition-all duration-300"
-        >
-            <LogOut size={16} />
-            <span>Logout</span>
-        </button>
+        // The SignOutButton from Clerk handles all the logic.
+        // We pass `redirectUrl` to tell it where to send the user after they log out.
+        <SignOutButton redirectUrl="/login">
+            <button className="w-full group flex items-center justify-center p-3 text-lg font-semibold text-red-400 rounded-lg hover:bg-red-500/10 transition-colors">
+                <LogOut size={22} className="mr-3 text-red-500 group-hover:text-red-400 transition-colors" />
+                <span className="transition-colors">Logout</span>
+            </button>
+        </SignOutButton>
     );
 }
