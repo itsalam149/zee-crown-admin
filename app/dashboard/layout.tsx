@@ -38,6 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             type="button"
                             onClick={() => setIsOpen(false)}
                             className="text-white hover:text-green-400 transition-transform transform hover:scale-110"
+                            title="Close sidebar"
                         >
                             <X size={28} />
                         </button>
@@ -73,6 +74,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         type="button"
                         onClick={() => setIsOpen(true)}
                         className="fixed top-4 left-4 bg-gradient-to-br from-green-500 to-emerald-600 text-white p-3 rounded-full shadow-lg shadow-green-500/30 z-50 hover:scale-110 transition-transform duration-200"
+                        title="Open sidebar"
                     >
                         <Menu size={28} />
                     </button>
