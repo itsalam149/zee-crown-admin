@@ -12,6 +12,7 @@ type Product = {
     name: string
     description: string | null
     price: number
+    mrp: number | null
     category: 'medicine' | 'cosmetics' | 'food' | 'perfumes'
     image_url: string | null
 }
@@ -20,6 +21,7 @@ type FormDataState = {
     name: string
     description: string
     price: string
+    mrp: string
     category: Product['category']
 }
 
@@ -39,24 +41,43 @@ export default function EditProductForm({ product }: { product: Product }) {
         name: product.name,
         description: product.description || '',
         price: product.price.toString(),
+        mrp: product.mrp?.toString() || '',
         category: product.category,
     })
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [uploadError, setUploadError] = useState<string | null>(null)
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files?.[0]) {
-            setImageFile(e.target.files[0])
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        try {
+            // Compress image to around 250 KB
+            const options = {
+                maxSizeMB: 0.25, // 250 KB
+                maxWidthOrHeight: 1280,
+                useWebWorker: true,
+            }
+
+            const compressedFile = await imageCompression(file, options)
+            setImageFile(compressedFile)
             setUploadError(null)
+
+            console.log(
+                `Original: ${(file.size / 1024).toFixed(1)} KB → Compressed: ${(compressedFile.size / 1024).toFixed(1)} KB`
+            )
+        } catch (error) {
+            console.error('Image compression failed:', error)
+            setUploadError('Failed to compress image. Please try again.')
         }
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
-        if (name === 'price') {
+        if (name === 'price' || name === 'mrp') {
             const sanitizedValue = value.replace(/[^0-9.]/g, '')
-            setFormData(prev => ({ ...prev, price: sanitizedValue }))
+            setFormData(prev => ({ ...prev, [name]: sanitizedValue }))
         } else {
             setFormData(prev => ({ ...prev, [name]: value }))
         }
@@ -64,6 +85,8 @@ export default function EditProductForm({ product }: { product: Product }) {
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (isSubmitting) return;
+
         setIsSubmitting(true)
         setUploadError(null)
 
@@ -73,9 +96,13 @@ export default function EditProductForm({ product }: { product: Product }) {
             if (imageFile) {
                 // Remove old image if exists
                 if (product.image_url) {
-                    const oldImagePath = product.image_url.split('/').pop()
-                    if (oldImagePath) {
-                        await supabase.storage.from('product_images').remove([`public/${oldImagePath}`])
+                    const oldImagePathArray = product.image_url.split('/');
+                    const oldImageName = oldImagePathArray[oldImagePathArray.length - 1];
+                    if (oldImageName) {
+                        const { error: removeError } = await supabase.storage.from('product_images').remove([`public/${oldImageName}`]);
+                        if (removeError) {
+                            console.warn("Could not remove old image, continuing anyway:", removeError.message);
+                        }
                     }
                 }
 
@@ -95,6 +122,7 @@ export default function EditProductForm({ product }: { product: Product }) {
             const dataToUpdate = {
                 ...formData,
                 price: parseFloat(formData.price) || 0,
+                mrp: parseFloat(formData.mrp) || null,
                 image_url: finalImageUrl,
             }
 
@@ -161,6 +189,20 @@ export default function EditProductForm({ product }: { product: Product }) {
                         onChange={handleChange}
                         className="w-full bg-black/30 border-2 border-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                         required
+                    />
+                </div>
+                <div className="space-y-2">
+                    <label htmlFor="mrp" className="block text-sm font-semibold text-gray-300">
+                        MRP
+                    </label>
+                    <input
+                        id="mrp"
+                        name="mrp"
+                        type="text"
+                        inputMode="decimal"
+                        value={formData.mrp}
+                        onChange={handleChange}
+                        className="w-full bg-black/30 border-2 border-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                     />
                 </div>
 

@@ -21,6 +21,7 @@ export default function NewProductPage() {
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
     const [price, setPrice] = useState('')
+    const [mrp, setMrp] = useState('')
     const [category, setCategory] = useState<Category>('medicine')
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [uploadError, setUploadError] = useState<string | null>(null)
@@ -53,6 +54,40 @@ export default function NewProductPage() {
         }
     }
 
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
+
+        if (!imageFile) {
+            setUploadError('Please select an image for the product.');
+            setIsSubmitting(false);
+            return;
+        }
+
+        const formData = new FormData(event.currentTarget);
+        formData.set('name', name);
+        formData.set('description', description);
+        formData.set('price', price);
+        formData.set('mrp', mrp);
+        formData.set('category', category);
+        formData.set('image_file', imageFile);
+
+        const result = await createProduct(formData);
+        if (result?.error) {
+            setUploadError(`Operation Failed: ${result.error}`);
+            setIsSubmitting(false);
+            return;
+        }
+
+        setShowSuccess(true);
+        setTimeout(() => {
+            window.location.href = '/dashboard/products';
+        }, 1200);
+    };
+
+
     return (
         <>
             <div className="min-h-screen bg-black text-gray-300 p-6 md:p-12">
@@ -70,31 +105,7 @@ export default function NewProductPage() {
                     <h1 className="text-5xl font-black text-white mb-8">Add New Product</h1>
 
                     <form
-                        action={async (formData: FormData) => {
-                            if (!imageFile) {
-                                setUploadError('Please select an image for the product.')
-                                return
-                            }
-
-                            setIsSubmitting(true)
-                            formData.set('name', name)
-                            formData.set('description', description)
-                            formData.set('price', price)
-                            formData.set('category', category)
-                            formData.set('image_file', imageFile)
-
-                            const result = await createProduct(formData)
-                            if (result?.error) {
-                                setUploadError(`Operation Failed: ${result.error}`)
-                                setIsSubmitting(false)
-                                return
-                            }
-
-                            setShowSuccess(true)
-                            setTimeout(() => {
-                                window.location.href = '/dashboard/products'
-                            }, 1200)
-                        }}
+                        onSubmit={handleSubmit}
                         className="p-8 space-y-8 backdrop-blur-lg bg-black/30 rounded-2xl border border-green-500/20 shadow-lg shadow-green-900/20"
                     >
                         <div className="space-y-2">
@@ -141,6 +152,21 @@ export default function NewProductPage() {
                                     placeholder="e.g., 1250.50"
                                     className="w-full bg-black/30 border-2 border-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                                     required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label htmlFor="mrp" className="block text-sm font-semibold text-gray-300">
+                                    MRP
+                                </label>
+                                <input
+                                    id="mrp"
+                                    name="mrp"
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={mrp}
+                                    onChange={(e) => setMrp(e.target.value.replace(/[^0-9.]/g, ''))}
+                                    placeholder="e.g., 1500.00"
+                                    className="w-full bg-black/30 border-2 border-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                                 />
                             </div>
 

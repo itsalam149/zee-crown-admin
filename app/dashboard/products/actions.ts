@@ -11,6 +11,7 @@ export async function createProduct(formData: FormData) {
     const name = formData.get('name') as string;
     const description = (formData.get('description') as string) ?? '';
     const price = parseFloat(formData.get('price') as string) || 0;
+    const mrp = parseFloat(formData.get('mrp') as string) || 0;
     const category = formData.get('category') as string;
     let imageUrl = (formData.get('image_url') as string) || '';
 
@@ -35,7 +36,7 @@ export async function createProduct(formData: FormData) {
         return { error: err instanceof Error ? err.message : 'Unexpected error' };
     }
 
-    const { error } = await supabase.from('products').insert([{ name, description, price, category, image_url: imageUrl || null }]);
+    const { error } = await supabase.from('products').insert([{ name, description, price, mrp, category, image_url: imageUrl || null }]);
     if (error) return { error: error.message || 'Failed to create product.' };
     revalidatePath('/dashboard/products');
     return { success: true } as const;

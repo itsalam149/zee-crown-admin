@@ -71,9 +71,17 @@ export default async function ViewProductPage({ params }: { params: Promise<{ id
                                 {product.name}
                             </h1>
 
-                            <p className="text-5xl font-bold text-emerald-400">
-                                ₹{Number(product.price).toFixed(2)}
-                            </p>
+                            <div className="flex items-end gap-4">
+                                <p className="text-5xl font-bold text-emerald-400">
+                                    ₹{Number(product.price).toFixed(2)}
+                                </p>
+                                {product.mrp && product.mrp > product.price && (
+                                    <p className="text-2xl font-medium text-gray-500 line-through">
+                                        ₹{Number(product.mrp).toFixed(2)}
+                                    </p>
+                                )}
+                            </div>
+
 
                             <div>
                                 <h2 className="text-xl font-bold text-white mb-3">

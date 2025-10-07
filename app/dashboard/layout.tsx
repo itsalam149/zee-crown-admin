@@ -2,10 +2,23 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Package, ShoppingCart, Users, Bell, Menu, X } from 'lucide-react';
+import {
+    LayoutDashboard,
+    Package,
+    ShoppingCart,
+    Users,
+    Bell,
+    Menu,
+    X,
+    ImageIcon, // <-- Added this import
+} from 'lucide-react';
 import LogoutButton from '@/components/LogoutButton';
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     const [isOpen, setIsOpen] = useState(true);
 
     return (
@@ -29,7 +42,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             </div>
                             <div>
                                 <h1 className="text-xl font-black text-white">Admin Panel</h1>
-                                <p className="text-green-300/80 text-sm font-medium">Zee Crown</p>
+                                <p className="text-green-300/80 text-sm font-medium">
+                                    Zee Crown
+                                </p>
                             </div>
                         </div>
 
@@ -49,11 +64,67 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {/* --- Navigation --- */}
                     <nav className="flex-1">
                         <ul className="space-y-3">
-                            <li><Link href="/dashboard" onClick={() => setIsOpen(false)} className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"><LayoutDashboard size={22} className="mr-4 text-green-400" /><span className="font-semibold text-lg">Dashboard</span></Link></li>
-                            <li><Link href="/dashboard/products" onClick={() => setIsOpen(false)} className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"><Package size={22} className="mr-4 text-green-400" /><span className="font-semibold text-lg">Products</span></Link></li>
-                            <li><Link href="/dashboard/orders" onClick={() => setIsOpen(false)} className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"><ShoppingCart size={22} className="mr-4 text-green-400" /><span className="font-semibold text-lg">Orders</span></Link></li>
-                            <li><Link href="/dashboard/customers" onClick={() => setIsOpen(false)} className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"><Users size={22} className="mr-4 text-green-400" /><span className="font-semibold text-lg">Customers</span></Link></li>
-                            <li><Link href="/dashboard/notifications" onClick={() => setIsOpen(false)} className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"><Bell size={22} className="mr-4 text-green-400" /><span className="font-semibold text-lg">Notifications</span></Link></li>
+                            <li>
+                                <Link
+                                    href="/dashboard"
+                                    onClick={() => setIsOpen(false)}
+                                    className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"
+                                >
+                                    <LayoutDashboard size={22} className="mr-4 text-green-400" />
+                                    <span className="font-semibold text-lg">Dashboard</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/dashboard/products"
+                                    onClick={() => setIsOpen(false)}
+                                    className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"
+                                >
+                                    <Package size={22} className="mr-4 text-green-400" />
+                                    <span className="font-semibold text-lg">Products</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/dashboard/orders"
+                                    onClick={() => setIsOpen(false)}
+                                    className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"
+                                >
+                                    <ShoppingCart size={22} className="mr-4 text-green-400" />
+                                    <span className="font-semibold text-lg">Orders</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/dashboard/customers"
+                                    onClick={() => setIsOpen(false)}
+                                    className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"
+                                >
+                                    <Users size={22} className="mr-4 text-green-400" />
+                                    <span className="font-semibold text-lg">Customers</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/dashboard/notifications"
+                                    onClick={() => setIsOpen(false)}
+                                    className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"
+                                >
+                                    <Bell size={22} className="mr-4 text-green-400" />
+                                    <span className="font-semibold text-lg">Notifications</span>
+                                </Link>
+                            </li>
+                            {/* --- ADDED BANNERS LINK --- */}
+                            <li>
+                                <Link
+                                    href="/dashboard/banners"
+                                    onClick={() => setIsOpen(false)}
+                                    className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"
+                                >
+                                    <ImageIcon size={22} className="mr-4 text-green-400" />
+                                    <span className="font-semibold text-lg">Banners</span>
+                                </Link>
+                            </li>
                         </ul>
                     </nav>
 

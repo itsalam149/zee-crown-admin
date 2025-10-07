@@ -8,7 +8,12 @@ const nextConfig = {
         port: '',
         pathname: '/storage/v1/object/public/product_images/**',
       },
-      // --- ADD THIS BLOCK ---
+      {
+        protocol: 'https',
+        hostname: 'siltyntxitqkzjsngbcq.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/banners/**',
+      },
       {
         protocol: 'https',
         hostname: 'i.pravatar.cc',

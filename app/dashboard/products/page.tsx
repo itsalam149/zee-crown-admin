@@ -13,6 +13,7 @@ type Product = {
     name: string;
     description: string | null;
     price: number;
+    mrp: number | null;
     category: string;
     image_url: string | null;
 };
@@ -122,6 +123,7 @@ export default async function ProductsPage({
                                         <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">Product</th>
                                         <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">Category</th>
                                         <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">Price</th>
+                                        <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">MRP</th>
                                         <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">View</th>
                                         <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
                                     </tr>
@@ -154,6 +156,9 @@ export default async function ProductsPage({
                                             </td>
                                             <td className="px-10 py-8 whitespace-nowrap text-xl text-gray-300 font-semibold">
                                                 ₹{product.price.toFixed(2)}
+                                            </td>
+                                            <td className="px-10 py-8 whitespace-nowrap text-xl text-gray-300 font-semibold">
+                                                ₹{product.mrp?.toFixed(2)}
                                             </td>
                                             <td className="px-10 py-8 whitespace-nowrap">
                                                 <Link href={`/dashboard/products/${product.id}`} className="text-gray-400 hover:text-white transition-colors">

@@ -120,11 +120,19 @@ export default async function ViewOrderPage({ params }: { params: Promise<{ id: 
                             </div>
                             <div>
                                 <p className="text-sm text-gray-400">Shipping Address</p>
-                                <p className="text-base text-gray-300">
-                                    {address
-                                        ? `${address.house_no ? address.house_no + ", " : ""}${address.street_address}, ${address.city}, ${address.state}, ${address.postal_code}, ${address.country}`
-                                        : order.shipping_address}
-                                </p>
+                                {address ? (
+                                    <div className="mt-2 space-y-1 text-base text-gray-300 border border-gray-700 rounded-lg p-4 bg-gray-900/50">
+                                        {address.house_no && <p><span className="font-semibold text-gray-400">House No:</span> {address.house_no}</p>}
+                                        {address.street_address && <p><span className="font-semibold text-gray-400">Street:</span> {address.street_address}</p>}
+                                        {address.landmark && <p><span className="font-semibold text-gray-400">Landmark:</span> {address.landmark}</p>}
+                                        {address.city && <p><span className="font-semibold text-gray-400">City:</span> {address.city}</p>}
+                                        {address.state && <p><span className="font-semibold text-gray-400">State:</span> {address.state}</p>}
+                                        {address.postal_code && <p><span className="font-semibold text-gray-400">Pincode:</span> {address.postal_code}</p>}
+                                        {address.country && <p><span className="font-semibold text-gray-400">Country:</span> {address.country}</p>}
+                                    </div>
+                                ) : (
+                                    <p className="text-base text-gray-300">{order.shipping_address}</p>
+                                )}
                                 {address?.mobile_number && (
                                     <p className="text-sm text-gray-400 mt-2">
                                         📞 {address.mobile_number}
