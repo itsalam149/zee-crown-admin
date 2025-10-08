@@ -88,7 +88,14 @@ export default function DeleteProductButton({
                                             Cancel
                                         </button>
                                         {/* The form is now inside the modal */}
-                                        <form action={async (formData: FormData) => { await deleteProduct(formData); }}>
+                                        <form action={async (formData: FormData) => {
+                                            const id = formData.get('productId');
+                                            if (typeof id !== 'string') {
+                                                console.error('Product ID missing or invalid');
+                                                return;
+                                            }
+                                            await deleteProduct(id);
+                                        }}>
                                             <input type="hidden" name="productId" value={productId} />
                                             <button
                                                 type="submit"

@@ -1,3 +1,4 @@
+// app/dashboard/products/page.tsx
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -5,8 +6,8 @@ import { Plus, Edit, Eye } from 'lucide-react';
 import ProductFilters from './ProductFilters';
 import DeleteProductButton from './DeleteProductButton';
 import ExportButtons from './ExportButtons';
+import CategorySelector from './CategorySelector'; // <-- Import the new component
 
-// Define the Product type here so we can use it for the props
 type Product = {
     id: string;
     created_at: string;
@@ -18,20 +19,25 @@ type Product = {
     image_url: string | null;
 };
 
-// ✅ Make the page component async and await searchParams
+// Helper function to truncate text
+const truncate = (text: string, length: number) => {
+    if (text.length <= length) {
+        return text;
+    }
+    return text.substring(0, length) + '...';
+};
+
 export default async function ProductsPage({
     searchParams,
 }: {
     searchParams: Promise<{ q?: string; category?: string; sortBy?: string }>;
 }) {
-    // Await searchParams (Next.js 15 requirement)
     const safeParams = await searchParams;
 
     const query = safeParams?.q ?? '';
     const category = safeParams?.category ?? '';
     const sortBy = safeParams?.sortBy ?? '';
 
-    // ✅ Await Supabase client if it uses async cookies
     const supabase = await createClient();
 
     let supabaseQuery = supabase.from('products').select('*');
@@ -54,24 +60,7 @@ export default async function ProductsPage({
     }
 
     const { data: products, error } = await supabaseQuery;
-
-    // Cast the fetched data to our Product type
     const typedProducts: Product[] = products || [];
-
-    const getCategoryStyles = (category: string) => {
-        switch (category) {
-            case 'cosmetics':
-                return 'bg-green-900/50 text-green-400 border border-green-700/50';
-            case 'medicine':
-                return 'bg-blue-900/50 text-blue-400 border border-blue-700/50';
-            case 'perfumes':
-                return 'bg-yellow-900/50 text-yellow-400 border border-yellow-700/50';
-            case 'food':
-                return 'bg-red-900/50 text-red-400 border border-red-700/50';
-            default:
-                return 'bg-gray-700 text-gray-300 border border-gray-600';
-        }
-    };
 
     if (error) {
         return (
@@ -96,7 +85,9 @@ export default async function ProductsPage({
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 animate-fade-in-up">
                     <div>
                         <h1 className="text-6xl font-black text-white">Products</h1>
-                        <p className="text-xl text-gray-400 mt-2">Manage and view your inventory</p>
+                        <p className="text-xl text-gray-400 mt-2">
+                            Manage and view your inventory
+                        </p>
                     </div>
                     <div className="flex items-center space-x-5">
                         <ExportButtons products={typedProducts} />
@@ -120,19 +111,37 @@ export default async function ProductsPage({
                             <table className="min-w-full">
                                 <thead className="bg-black/50 border-b border-green-500/20">
                                     <tr>
-                                        <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">Product</th>
-                                        <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">Category</th>
-                                        <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">Price</th>
-                                        <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">MRP</th>
-                                        <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">View</th>
-                                        <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+                                        <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">
+                                            Product
+                                        </th>
+                                        <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">
+                                            Category
+                                        </th>
+                                        <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">
+                                            Price
+                                        </th>
+                                        <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">
+                                            MRP
+                                        </th>
+                                        <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">
+                                            View
+                                        </th>
+                                        <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">
+                                            Actions
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-800">
                                     {typedProducts?.map((product) => (
-                                        <tr key={product.id} className="hover:bg-green-950/20 transition-colors">
+                                        <tr
+                                            key={product.id}
+                                            className="hover:bg-green-950/20 transition-colors"
+                                        >
                                             <td className="px-10 py-8 whitespace-nowrap">
-                                                <div className="flex items-center space-x-6">
+                                                <div
+                                                    className="flex items-center space-x-6 group"
+                                                    title={product.name}
+                                                >
                                                     {product.image_url ? (
                                                         <Image
                                                             src={product.image_url}
@@ -146,13 +155,16 @@ export default async function ProductsPage({
                                                             {product.name[0]}
                                                         </div>
                                                     )}
-                                                    <span className="text-xl font-medium text-white">{product.name}</span>
+                                                    <span className="text-xl font-medium text-white">
+                                                        {truncate(product.name, 30)}
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td className="px-10 py-8 whitespace-nowrap">
-                                                <span className={`px-4 py-2 text-sm font-semibold rounded-full ${getCategoryStyles(product.category)}`}>
-                                                    {product.category}
-                                                </span>
+                                                <CategorySelector
+                                                    productId={product.id}
+                                                    currentCategory={product.category}
+                                                />
                                             </td>
                                             <td className="px-10 py-8 whitespace-nowrap text-xl text-gray-300 font-semibold">
                                                 ₹{product.price.toFixed(2)}
@@ -161,13 +173,19 @@ export default async function ProductsPage({
                                                 ₹{product.mrp?.toFixed(2)}
                                             </td>
                                             <td className="px-10 py-8 whitespace-nowrap">
-                                                <Link href={`/dashboard/products/${product.id}`} className="text-gray-400 hover:text-white transition-colors">
+                                                <Link
+                                                    href={`/dashboard/products/${product.id}`}
+                                                    className="text-gray-400 hover:text-white transition-colors"
+                                                >
                                                     <Eye size={28} />
                                                 </Link>
                                             </td>
                                             <td className="px-10 py-8 whitespace-nowrap">
                                                 <div className="flex items-center space-x-6">
-                                                    <Link href={`/dashboard/products/${product.id}/edit`} className="text-gray-400 hover:text-green-500 transition-colors">
+                                                    <Link
+                                                        href={`/dashboard/products/${product.id}/edit`}
+                                                        className="text-gray-400 hover:text-green-500 transition-colors"
+                                                    >
                                                         <Edit size={28} />
                                                     </Link>
                                                     <DeleteProductButton productId={product.id} />
@@ -191,7 +209,9 @@ export default async function ProductsPage({
                         <h3 className="text-3xl font-black bg-gradient-to-r from-green-400 to-green-400 bg-clip-text text-transparent mb-3">
                             No Products Found
                         </h3>
-                        <p className="text-green-300/70 mb-8 text-lg">Your search or filter returned no results.</p>
+                        <p className="text-green-300/70 mb-8 text-lg">
+                            Your search or filter returned no results.
+                        </p>
                         <Link
                             href="/dashboard/products"
                             className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg inline-flex items-center space-x-2 transition-colors text-base"

@@ -1,11 +1,10 @@
-'use server'
+'use server';
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
-// Removed unused redirect import
-
 import sharp from 'sharp';
 
+// CREATE a new product
 export async function createProduct(formData: FormData) {
     const supabase = createAdminClient();
     const name = formData.get('name') as string;
@@ -17,7 +16,7 @@ export async function createProduct(formData: FormData) {
 
     try {
         const imageFile = formData.get('image_file') as File | null;
-        if (imageFile && typeof imageFile === 'object') {
+        if (imageFile && typeof imageFile === 'object' && imageFile.size > 0) {
             const buffer = Buffer.from(await imageFile.arrayBuffer());
             const compressed = await sharp(buffer).rotate().webp({ quality: 80 }).toBuffer();
             const uploadBytes = new Uint8Array(compressed);
@@ -28,26 +27,56 @@ export async function createProduct(formData: FormData) {
                 .from('product_images')
                 .upload(filePath, uploadBytes, { contentType: 'image/webp', upsert: false });
 
-            if (!uploadData || uploadError) return { error: 'Failed to upload image.' };
+            if (!uploadData || uploadError) {
+                console.error("Image Upload Error:", uploadError);
+                return { error: 'Failed to upload image.' };
+            }
             const { data: pub } = supabase.storage.from('product_images').getPublicUrl(uploadData.path);
             imageUrl = pub.publicUrl;
         }
     } catch (err: unknown) {
-        return { error: err instanceof Error ? err.message : 'Unexpected error' };
+        console.error("Image Processing/Upload Error:", err);
+        return { error: err instanceof Error ? err.message : 'Unexpected error during image processing' };
     }
 
     const { error } = await supabase.from('products').insert([{ name, description, price, mrp, category, image_url: imageUrl || null }]);
-    if (error) return { error: error.message || 'Failed to create product.' };
+    if (error) {
+        console.error("Product Creation Error:", error);
+        return { error: error.message || 'Failed to create product.' };
+    }
     revalidatePath('/dashboard/products');
     return { success: true } as const;
 }
 
-export async function deleteProduct(formData: FormData) {
+// UPDATE a product's category
+export async function updateProductCategory(
+    productId: string,
+    newCategory: string
+) {
+    const supabase = await createAdminClient();
+    const { error } = await supabase
+        .from('products')
+        .update({ category: newCategory })
+        .eq('id', productId);
+
+    if (error) {
+        console.error('Error updating category:', error);
+        return { error: 'Failed to update category.' };
+    }
+
+    revalidatePath('/dashboard/products');
+    return { success: true };
+}
+
+// DELETE a product
+export async function deleteProduct(productId: string) {
     const supabase = createAdminClient();
-    const productId = formData.get('productId') as string;
     if (!productId) return { error: 'Product ID missing' };
     const { error } = await supabase.from('products').delete().eq('id', productId);
-    if (error) return { error: 'Failed to delete product.' };
+    if (error) {
+        console.error("Product Deletion Error:", error);
+        return { error: 'Failed to delete product.' };
+    }
     revalidatePath('/dashboard/products');
     return { success: 'Product deleted successfully.' };
 }
