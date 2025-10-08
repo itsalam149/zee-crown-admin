@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useTransition, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,12 +8,46 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { createBanner } from './actions';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import imageCompression from 'browser-image-compression';
 
 export function BannerForm() {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [uploadError, setUploadError] = useState<string | null>(null);
 
-    async function handleSubmit(formData: FormData) {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const options = {
+                maxSizeMB: 0.5, // 500 KB
+                maxWidthOrHeight: 1920,
+                useWebWorker: true,
+            };
+
+            const compressedFile = await imageCompression(file, options);
+            setImageFile(compressedFile);
+            setUploadError(null);
+        } catch (error) {
+            console.error('Image compression failed:', error);
+            setUploadError('Failed to compress image. Please try again.');
+        }
+    };
+
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        if (isPending || !imageFile) {
+            if (!imageFile) {
+                setUploadError('Please select an image for the banner.');
+            }
+            return;
+        }
+
+        const formData = new FormData(event.currentTarget);
+        formData.set('image', imageFile);
+
         startTransition(async () => {
             const result = await createBanner(formData);
             if (result?.error) {
@@ -27,12 +61,13 @@ export function BannerForm() {
 
     return (
         <form
-            action={handleSubmit}
-            className="grid gap-6 transform scale-110 max-w-2xl mx-auto bg-black/40 border border-green-900/50 p-8 rounded-2xl shadow-2xl shadow-green-900/30"
+            onSubmit={handleSubmit}
+            className="grid gap-6"
         >
             <div className="grid gap-3">
                 <Label htmlFor="image">Banner Image</Label>
-                <Input id="image" name="image" type="file" required />
+                <Input id="image" name="image" type="file" required onChange={handleFileChange} />
+                {uploadError && <p className="text-sm text-red-400 mt-2">{uploadError}</p>}
             </div>
 
             <div className="flex items-center gap-3">
