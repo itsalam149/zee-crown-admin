@@ -13,13 +13,35 @@ type OrderItem = {
     products: ProductInfo | null
 }
 
+type Profile = {
+    full_name: string | null
+}
+
+type Address = {
+    mobile_number: string | null
+}
+
+type RawOrder = {
+    id: string
+    created_at: string
+    total_price: number
+    status: string
+    payment_method: string | null
+    profiles?: Profile | Profile[] | null
+    addresses?: Address | Address[] | null
+    order_items?: {
+        quantity: number
+        products?: ProductInfo | ProductInfo[] | null
+    }[]
+}
+
 type OrderWithDetails = {
     id: string
     created_at: string
     total_price: number
     status: string
-    payment_method: string | null;
-    customer_name: string | null
+    payment_method: string | null
+    customer_name: string
     mobile_number: string | null
     order_items: OrderItem[]
 }
@@ -31,18 +53,18 @@ export default async function OrdersPage() {
     const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select(`
-            id,
-            created_at,
-            total_price,
-            status,
-            payment_method,
-            profiles ( full_name ),
-            addresses ( mobile_number ),
-            order_items (
-                quantity,
-                products ( name )
-            )
-        `)
+      id,
+      created_at,
+      total_price,
+      status,
+      payment_method,
+      profiles ( full_name ),
+      addresses ( mobile_number ),
+      order_items (
+        quantity,
+        products ( name )
+      )
+    `)
         .order('created_at', { ascending: false })
 
     if (ordersError) {
@@ -57,24 +79,38 @@ export default async function OrdersPage() {
         )
     }
 
-    const orders: OrderWithDetails[] = ((ordersData ?? []) as any[]).map((order: any) => ({
-        id: order.id,
-        created_at: order.created_at,
-        total_price: order.total_price,
-        status: order.status,
-        payment_method: order.payment_method,
-        customer_name: Array.isArray(order.profiles) ? order.profiles[0]?.full_name ?? 'N/A' : (order.profiles as any)?.full_name ?? 'N/A',
-        mobile_number: Array.isArray(order.addresses) ? order.addresses[0]?.mobile_number ?? null : (order.addresses as any)?.mobile_number ?? null,
-        order_items: Array.isArray(order.order_items)
-            ? order.order_items.map((item: any) => {
-                const product = Array.isArray(item.products) ? item.products[0] : item.products;
+    const orders: OrderWithDetails[] = (ordersData ?? []).map((order: RawOrder) => {
+        const customerProfile = Array.isArray(order.profiles)
+            ? order.profiles[0]
+            : order.profiles
+
+        const customerAddress = Array.isArray(order.addresses)
+            ? order.addresses[0]
+            : order.addresses
+
+        const items: OrderItem[] = Array.isArray(order.order_items)
+            ? order.order_items.map((item) => {
+                const product = Array.isArray(item.products)
+                    ? item.products[0]
+                    : item.products
                 return {
                     quantity: item.quantity,
                     products: product ? { name: product.name ?? null } : null,
-                };
+                }
             })
-            : [],
-    }));
+            : []
+
+        return {
+            id: order.id,
+            created_at: order.created_at,
+            total_price: order.total_price,
+            status: order.status,
+            payment_method: order.payment_method,
+            customer_name: customerProfile?.full_name ?? 'N/A',
+            mobile_number: customerAddress?.mobile_number ?? null,
+            order_items: items,
+        }
+    })
 
     return (
         <div className="min-h-screen bg-black text-gray-300 font-sans p-6 md:p-12">
@@ -113,11 +149,18 @@ export default async function OrdersPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-800">
-                                {orders.map(order => (
-                                    <tr key={order.id} className="hover:bg-green-950/20 transition-colors">
+                                {orders.map((order) => (
+                                    <tr
+                                        key={order.id}
+                                        className="hover:bg-green-950/20 transition-colors"
+                                    >
                                         <td className="px-10 py-8 align-top">
-                                            <div className="text-xl font-medium text-white mb-1">{order.customer_name}</div>
-                                            <div className="text-sm font-mono text-gray-400 mb-3">#{order.id.substring(0, 8)}...</div>
+                                            <div className="text-xl font-medium text-white mb-1">
+                                                {order.customer_name}
+                                            </div>
+                                            <div className="text-sm font-mono text-gray-400 mb-3">
+                                                #{order.id.substring(0, 8)}...
+                                            </div>
                                             <ul className="space-y-1 text-gray-400 list-disc list-inside">
                                                 {order.order_items.map((item, index) => (
                                                     <li key={index} className="text-sm">
@@ -129,7 +172,9 @@ export default async function OrdersPage() {
 
                                         <td className="px-10 py-8 whitespace-nowrap text-lg text-gray-300 align-top">
                                             {order.mobile_number ? (
-                                                <span className="font-mono text-green-400">{order.mobile_number}</span>
+                                                <span className="font-mono text-green-400">
+                                                    {order.mobile_number}
+                                                </span>
                                             ) : (
                                                 <span className="text-gray-500">N/A</span>
                                             )}
@@ -156,7 +201,10 @@ export default async function OrdersPage() {
                                         </td>
 
                                         <td className="px-10 py-8 whitespace-nowrap align-top">
-                                            <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
+                                            <OrderStatusUpdater
+                                                orderId={order.id}
+                                                currentStatus={order.status}
+                                            />
                                         </td>
 
                                         <td className="px-10 py-8 whitespace-nowrap align-top">
