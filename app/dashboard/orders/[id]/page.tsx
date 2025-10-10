@@ -5,13 +5,13 @@ import Link from "next/link";
 import { ArrowLeft, Package } from "lucide-react";
 
 export default async function ViewOrderPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params; // ✅ Next.js 15+ requires awaiting params
+    const { id } = await params;
     const supabase = createAdminClient();
 
-    // Fetch the order with customer profile
+    // Fetch the order with customer profile and address
     const { data: order, error: orderError } = await supabase
         .from("orders")
-        .select(`*, payment_method, profiles(full_name)`)
+        .select(`*, payment_method, profiles(full_name), addresses(*)`)
         .eq("id", id)
         .single();
 
@@ -30,14 +30,7 @@ export default async function ViewOrderPage({ params }: { params: Promise<{ id: 
         console.error("Error fetching order items:", itemsError.message);
     }
 
-    // Fetch customer's address (taking the default address if exists)
-    const { data: address } = await supabase
-        .from("addresses")
-        .select("*")
-        .eq("user_id", order.user_id)
-        .order("is_default", { ascending: false }) // prefer default address
-        .limit(1)
-        .single();
+    const address = order.addresses;
 
     const getStatusStyles = (status: string) => {
         switch (status) {

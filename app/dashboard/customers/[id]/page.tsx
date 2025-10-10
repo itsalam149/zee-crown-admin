@@ -7,9 +7,9 @@ import { ArrowLeft, Mail, Phone, Home, ShoppingCart } from "lucide-react";
 export default async function ViewCustomerPage({
     params
 }: {
-    params: Promise<{ id: string }> // Changed: params is now a Promise
+    params: Promise<{ id: string }>
 }) {
-    const { id: customerId } = await params; // Added: await the params
+    const { id: customerId } = await params;
     const supabase = await createClient();
 
     // Fetch profile, addresses, orders, and user in parallel
@@ -17,13 +17,13 @@ export default async function ViewCustomerPage({
         supabase.from('profiles').select('*').eq('id', customerId).single(),
         supabase.from('addresses').select('*').eq('user_id', customerId),
         supabase.from('orders').select('*').eq('user_id', customerId).order('created_at', { ascending: false }),
-        supabase.auth.admin.getUserById(customerId) // Fetches email from auth schema
+        supabase.auth.admin.getUserById(customerId)
     ]);
 
     const { data: profile, error: profileError } = profileRes;
     const { data: addresses } = addressesRes;
     const { data: orders } = ordersRes;
-    const user = userRes.data?.user; // safely access user
+    const user = userRes.data?.user;
 
     if (profileError || !profile) {
         notFound();
@@ -55,10 +55,12 @@ export default async function ViewCustomerPage({
                                     <Mail size={16} />
                                     <span>{user?.email || 'No email'}</span>
                                 </span>
-                                <span className="flex items-center space-x-2">
-                                    <Phone size={16} />
-                                    <span>{profile.phone_number || 'No phone'}</span>
-                                </span>
+                                {addresses && addresses.length > 0 && addresses[0].mobile_number &&
+                                    <span className="flex items-center space-x-2">
+                                        <Phone size={16} />
+                                        <span>{addresses[0].mobile_number}</span>
+                                    </span>
+                                }
                             </div>
                         </div>
                     </div>
@@ -78,10 +80,11 @@ export default async function ViewCustomerPage({
                                         key={addr.id}
                                         className="bg-gray-900/50 p-4 rounded-lg border border-gray-800"
                                     >
-                                        <p>
-                                            {addr.street_address}, {addr.city}, {addr.state} - {addr.postal_code}
-                                        </p>
-                                        <p className="text-xs text-gray-500">{addr.country}</p>
+                                        <p className="font-semibold text-white">{addr.house_no}, {addr.street_address}</p>
+                                        {addr.landmark && <p className="text-gray-400">{addr.landmark}</p>}
+                                        <p className="text-gray-400">{addr.city}, {addr.state} - {addr.postal_code}</p>
+                                        <p className="text-gray-400">{addr.country}</p>
+                                        <p className="text-sm text-gray-500 mt-2">{addr.mobile_number}</p>
                                     </div>
                                 ))
                             ) : (
@@ -98,22 +101,23 @@ export default async function ViewCustomerPage({
                         <div className="space-y-4">
                             {orders && orders.length > 0 ? (
                                 orders.map(order => (
-                                    <div
-                                        key={order.id}
-                                        className="bg-gray-900/50 p-4 rounded-lg border border-gray-800 flex justify-between items-center"
-                                    >
-                                        <div>
-                                            <p className="font-mono text-sm text-gray-400">
-                                                #{order.id.substring(0, 8)}
-                                            </p>
-                                            <p className="text-white">
-                                                on {new Date(order.created_at).toLocaleDateString()}
+                                    <Link key={order.id} href={`/dashboard/orders/${order.id}`}>
+                                        <div
+                                            className="bg-gray-900/50 p-4 rounded-lg border border-gray-800 flex justify-between items-center hover:bg-gray-800/50 transition-colors cursor-pointer"
+                                        >
+                                            <div>
+                                                <p className="font-mono text-sm text-gray-400">
+                                                    #{order.id.substring(0, 8)}
+                                                </p>
+                                                <p className="text-white">
+                                                    on {new Date(order.created_at).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                            <p className="text-lg font-semibold text-green-400">
+                                                ₹{order.total_price.toFixed(2)}
                                             </p>
                                         </div>
-                                        <p className="text-lg font-semibold text-green-400">
-                                            ₹{order.total_price.toFixed(2)}
-                                        </p>
-                                    </div>
+                                    </Link>
                                 ))
                             ) : (
                                 <p className="text-gray-500">No orders found.</p>

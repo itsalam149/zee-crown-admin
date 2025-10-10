@@ -5,12 +5,11 @@ import { Users, Eye, Edit } from 'lucide-react';
 import DeleteCustomerButton from './DeleteCustomerButton';
 
 export default async function CustomersPage() {
-    // await the async client!
     const supabase = await createClient();
 
     const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, full_name, phone_number, created_at')
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -24,6 +23,29 @@ export default async function CustomersPage() {
             </div>
         );
     }
+
+    const userIds = profiles?.map(p => p.id) || [];
+    const addressesMap = new Map<string, string | null>();
+    const profilesMap = new Map(profiles?.map(p => [p.id, { fullName: p.full_name, phoneNumber: p.phone_number }]));
+
+
+    if (userIds.length > 0) {
+        const { data: addressesData } = await supabase
+            .from('addresses')
+            .select('user_id, mobile_number, is_default')
+            .in('user_id', userIds);
+
+        if (addressesData) {
+            // Sort by is_default to prioritize the default address
+            addressesData.sort((a, b) => Number(b.is_default) - Number(a.is_default));
+            for (const addr of addressesData) {
+                if (!addressesMap.has(addr.user_id)) {
+                    addressesMap.set(addr.user_id, addr.mobile_number);
+                }
+            }
+        }
+    }
+
 
     return (
         <div className="min-h-screen bg-black text-gray-300 font-sans p-6 md:p-12">
@@ -64,7 +86,7 @@ export default async function CustomersPage() {
                                             {profile.full_name || 'N/A'}
                                         </td>
                                         <td className="px-10 py-8 whitespace-nowrap text-xl text-gray-300">
-                                            {profile.phone_number || 'N/A'}
+                                            {addressesMap.get(profile.id) || profilesMap.get(profile.id)?.phoneNumber || 'N/A'}
                                         </td>
                                         <td className="px-10 py-8 whitespace-nowrap">
                                             <Link

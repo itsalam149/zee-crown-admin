@@ -18,8 +18,8 @@ type OrderWithDetails = {
     created_at: string
     total_price: number
     status: string
-    payment_method: string | null; // Added payment_method
-    customer_name: string
+    payment_method: string | null;
+    customer_name: string | null
     mobile_number: string | null
     order_items: OrderItem[]
 }
@@ -27,7 +27,7 @@ type OrderWithDetails = {
 export default async function OrdersPage() {
     const supabase = await createClient()
 
-    // Fetch orders with items + products
+    // Fetch orders with customer profile, address, and items
     const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select(`
@@ -35,8 +35,9 @@ export default async function OrdersPage() {
             created_at,
             total_price,
             status,
-            user_id,
-            payment_method, 
+            payment_method,
+            profiles ( full_name ),
+            addresses ( mobile_number ),
             order_items (
                 quantity,
                 products ( name )
@@ -56,52 +57,24 @@ export default async function OrdersPage() {
         )
     }
 
-    let orders: OrderWithDetails[] = []
-
-    if (ordersData && ordersData.length > 0) {
-        const userIds = [...new Set(ordersData.map(order => order.user_id).filter(Boolean))] as string[]
-
-        // Fetch profiles
-        const { data: profilesData } = await supabase
-            .from('profiles')
-            .select('id, full_name')
-            .in('id', userIds)
-
-        // Fetch addresses
-        const { data: addressesData } = await supabase
-            .from('addresses')
-            .select('user_id, mobile_number, is_default')
-            .in('user_id', userIds)
-
-        // Create lookup maps
-        const profilesMap = new Map(profilesData?.map(p => [p.id, p.full_name]))
-        const addressesMap = new Map(
-            addressesData
-                ?.sort((a, b) => Number(b.is_default) - Number(a.is_default))
-                .map(addr => [addr.user_id, addr.mobile_number])
-        )
-
-        // Map orders
-        orders = ordersData.map(order => ({
-            id: order.id,
-            created_at: order.created_at,
-            total_price: order.total_price,
-            status: order.status,
-            payment_method: order.payment_method, // Added payment_method
-            order_items: Array.isArray(order.order_items)
-                ? order.order_items.map(item => {
-                    // Handle the case where products might be an array or object
-                    const product = Array.isArray(item.products) ? item.products[0] : item.products;
-                    return {
-                        quantity: item.quantity,
-                        products: product ? { name: product.name ?? null } : null,
-                    };
-                })
-                : [],
-            customer_name: profilesMap.get(order.user_id) || 'N/A',
-            mobile_number: addressesMap.get(order.user_id) || null,
-        }))
-    }
+    const orders: OrderWithDetails[] = ((ordersData ?? []) as any[]).map((order: any) => ({
+        id: order.id,
+        created_at: order.created_at,
+        total_price: order.total_price,
+        status: order.status,
+        payment_method: order.payment_method,
+        customer_name: Array.isArray(order.profiles) ? order.profiles[0]?.full_name ?? 'N/A' : (order.profiles as any)?.full_name ?? 'N/A',
+        mobile_number: Array.isArray(order.addresses) ? order.addresses[0]?.mobile_number ?? null : (order.addresses as any)?.mobile_number ?? null,
+        order_items: Array.isArray(order.order_items)
+            ? order.order_items.map((item: any) => {
+                const product = Array.isArray(item.products) ? item.products[0] : item.products;
+                return {
+                    quantity: item.quantity,
+                    products: product ? { name: product.name ?? null } : null,
+                };
+            })
+            : [],
+    }));
 
     return (
         <div className="min-h-screen bg-black text-gray-300 font-sans p-6 md:p-12">
