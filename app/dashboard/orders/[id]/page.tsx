@@ -11,7 +11,7 @@ export default async function ViewOrderPage({ params }: { params: Promise<{ id: 
     // Fetch the order with customer profile
     const { data: order, error: orderError } = await supabase
         .from("orders")
-        .select(`*, profiles(full_name)`)
+        .select(`*, payment_method, profiles(full_name)`)
         .eq("id", id)
         .single();
 
@@ -116,6 +116,12 @@ export default async function ViewOrderPage({ params }: { params: Promise<{ id: 
                                 <p className="text-sm text-gray-400">Date</p>
                                 <p className="text-lg font-semibold text-white">
                                     {new Date(order.created_at).toLocaleString()}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-400">Payment Method</p>
+                                <p className="text-lg font-semibold text-white">
+                                    {order.payment_method || 'N/A'}
                                 </p>
                             </div>
                             <div>

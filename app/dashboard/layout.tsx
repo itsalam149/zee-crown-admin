@@ -10,7 +10,8 @@ import {
     Bell,
     Menu,
     X,
-    ImageIcon, // <-- Added this import
+    ImageIcon,
+    Truck, // <-- Added this import
 } from 'lucide-react';
 import LogoutButton from '@/components/LogoutButton';
 
@@ -123,6 +124,17 @@ export default function DashboardLayout({
                                 >
                                     <ImageIcon size={22} className="mr-4 text-green-400" />
                                     <span className="font-semibold text-lg">Banners</span>
+                                </Link>
+                            </li>
+                            {/* --- ADDED SHIPPING RULES LINK --- */}
+                            <li>
+                                <Link
+                                    href="/dashboard/shipping-rules"
+                                    onClick={() => setIsOpen(false)}
+                                    className="group flex items-center p-3 text-gray-300 rounded-lg hover:bg-white/5"
+                                >
+                                    <Truck size={22} className="mr-4 text-green-400" />
+                                    <span className="font-semibold text-lg">Shipping Rules</span>
                                 </Link>
                             </li>
                         </ul>

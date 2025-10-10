@@ -18,6 +18,7 @@ type OrderWithDetails = {
     created_at: string
     total_price: number
     status: string
+    payment_method: string | null; // Added payment_method
     customer_name: string
     mobile_number: string | null
     order_items: OrderItem[]
@@ -35,6 +36,7 @@ export default async function OrdersPage() {
             total_price,
             status,
             user_id,
+            payment_method, 
             order_items (
                 quantity,
                 products ( name )
@@ -85,6 +87,7 @@ export default async function OrdersPage() {
             created_at: order.created_at,
             total_price: order.total_price,
             status: order.status,
+            payment_method: order.payment_method, // Added payment_method
             order_items: Array.isArray(order.order_items)
                 ? order.order_items.map(item => {
                     // Handle the case where products might be an array or object
@@ -126,6 +129,9 @@ export default async function OrdersPage() {
                                         Total
                                     </th>
                                     <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">
+                                        Payment
+                                    </th>
+                                    <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">
                                         Status
                                     </th>
                                     <th className="px-10 py-6 text-left text-base font-semibold text-gray-400 uppercase tracking-wider">
@@ -162,6 +168,18 @@ export default async function OrdersPage() {
 
                                         <td className="px-10 py-8 whitespace-nowrap text-xl text-gray-300 font-semibold align-top">
                                             ₹{order.total_price.toFixed(2)}
+                                        </td>
+
+                                        <td className="px-10 py-8 whitespace-nowrap text-lg text-gray-300 align-top">
+                                            {order.payment_method === 'COD' ? (
+                                                <span className="bg-yellow-900/50 text-yellow-400 border border-yellow-700/50 px-3 py-1 rounded-full text-sm">
+                                                    COD
+                                                </span>
+                                            ) : (
+                                                <span className="bg-green-900/50 text-green-400 border border-green-700/50 px-3 py-1 rounded-full text-sm">
+                                                    Paid
+                                                </span>
+                                            )}
                                         </td>
 
                                         <td className="px-10 py-8 whitespace-nowrap align-top">
