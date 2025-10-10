@@ -5,7 +5,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { BannerForm } from '../BannerForm';
+import { BannerForm } from './BannerForm'; // Assuming BannerForm is in the same directory
 
 export default function NewBannerPage() {
     return (
@@ -16,7 +16,7 @@ export default function NewBannerPage() {
                         Add New Banner
                     </CardTitle>
                     <CardDescription className="text-gray-400">
-                        Upload a promotional image and set its visibility.
+                        Upload a promotional image, set its category, order, and visibility.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

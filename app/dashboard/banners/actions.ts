@@ -2,17 +2,20 @@
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
-// Remove the redirect import as we will handle it on the client
-// import { redirect } from 'next/navigation';
 
 const BUCKET_NAME = 'banners';
 
-// createBanner function remains the same...
+// Define the allowed category types for type safety
+type BannerCategory = 'All' | 'medicine' | 'cosmetics' | 'food' | 'perfumes';
+
 export async function createBanner(formData: FormData) {
     const supabase = createAdminClient();
     const imageFile = formData.get('image') as File;
     const sortOrder = formData.get('sort_order') as string;
     const isActive = formData.get('is_active') === 'on';
+    // Also get the category from the form
+    const category = formData.get('category') as BannerCategory;
+
 
     if (!imageFile || imageFile.size === 0) {
         return { error: 'Banner image is required.' };
@@ -36,6 +39,7 @@ export async function createBanner(formData: FormData) {
         image_url: publicUrlData.publicUrl,
         sort_order: parseInt(sortOrder, 10) || 0,
         is_active: isActive,
+        category: category || 'All' // Set the category, defaulting to 'All'
     });
 
     if (dbError) {
@@ -78,4 +82,24 @@ export async function deleteBanner(id: string, imageUrl: string) {
     revalidatePath('/dashboard/banners');
     // Remove the redirect and return a success object
     return { success: 'Banner deleted successfully!' };
+}
+
+export async function updateBannerCategory(id: string, category: BannerCategory) {
+    const supabase = await createAdminClient();
+    
+    const { error } = await supabase
+      .from('banners')
+      .update({ category: category })
+      .eq('id', id);
+  
+    if (error) {
+      console.error('Error updating banner category:', error);
+      // You can return an error message to the client if needed
+      return { error: 'Failed to update category.' };
+    }
+  
+    // Revalidate the path to refresh the data on the page
+    revalidatePath('/dashboard/banners');
+  
+    return { success: true };
 }
