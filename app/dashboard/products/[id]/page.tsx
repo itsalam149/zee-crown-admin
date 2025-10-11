@@ -52,6 +52,7 @@ export default async function ViewProductPage({ params }: { params: Promise<{ id
                                 height={600}
                                 className="w-full h-auto object-cover rounded-lg"
                                 priority
+                                unoptimized
                             />
                         ) : (
                             <div className="w-full aspect-square bg-gray-900 rounded-lg flex items-center justify-center text-gray-500 border border-gray-700">

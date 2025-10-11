@@ -116,6 +116,7 @@ export default function BannersPage() {
                                                 width={160}
                                                 height={90}
                                                 className="w-40 h-24 object-cover rounded-lg border-2 border-green-900/50"
+                                                unoptimized
                                             />
                                         </td>
                                         <td className="px-10 py-8 whitespace-nowrap w-48">

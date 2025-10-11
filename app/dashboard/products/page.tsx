@@ -149,6 +149,7 @@ export default async function ProductsPage({
                                                             width={64}
                                                             height={64}
                                                             className="w-16 h-16 object-cover rounded-lg border-2 border-green-900/50"
+                                                            unoptimized
                                                         />
                                                     ) : (
                                                         <div className="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center text-xl font-bold text-gray-500 border-2 border-gray-700">

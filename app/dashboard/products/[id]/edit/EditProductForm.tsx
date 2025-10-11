@@ -234,6 +234,7 @@ export default function EditProductForm({ product }: { product: Product }) {
                             width={100}
                             height={100}
                             className="rounded-lg"
+                            unoptimized
                         />
                     </div>
                 )}

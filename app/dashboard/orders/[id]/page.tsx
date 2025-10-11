@@ -70,6 +70,7 @@ export default async function ViewOrderPage({ params }: { params: Promise<{ id: 
                                                 width={64}
                                                 height={64}
                                                 className="w-16 h-16 rounded-lg object-cover border-2 border-gray-700"
+                                                unoptimized
                                             />
                                         ) : (
                                             <div className="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center">
