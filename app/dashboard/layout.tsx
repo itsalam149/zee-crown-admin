@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+// 1. REMOVE Suspense and ContentLoader imports
+// import { Suspense, useState } from 'react';
+import { useState } from 'react'; // <-- Keep useState
 import Link from 'next/link';
 import {
     LayoutDashboard,
@@ -11,9 +13,10 @@ import {
     Menu,
     X,
     ImageIcon,
-    Truck, // <-- Added this import
+    Truck,
 } from 'lucide-react';
 import LogoutButton from '@/components/LogoutButton';
+// import ContentLoader from '@/components/ContentLoader';
 
 export default function DashboardLayout({
     children,
@@ -29,11 +32,7 @@ export default function DashboardLayout({
                 className={`absolute h-full w-80 bg-black text-white border-r border-green-900/50 transition-transform duration-300 ease-in-out z-40 ${isOpen ? 'translate-x-0' : '-translate-x-full'
                     }`}
             >
-                <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-black">
-                    <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-full blur-2xl animate-pulse" />
-                    <div className="absolute bottom-32 right-8 w-24 h-24 bg-gradient-to-br from-emerald-400/8 to-green-400/8 rounded-full blur-xl animate-pulse" />
-                </div>
-
+                {/* ... (all your sidebar code remains the same) ... */}
                 <div className="relative z-10 p-6 h-full flex flex-col">
                     {/* --- Header --- */}
                     <div className="mb-10 flex items-center justify-between">
@@ -163,7 +162,10 @@ export default function DashboardLayout({
                     </button>
                 )}
 
-                <div className="p-4 md:p-6">{children}</div>
+                <div className="p-4 md:p-6">
+                    {/* 2. REMOVE the Suspense wrapper */}
+                    {children}
+                </div>
             </main>
         </div>
     );

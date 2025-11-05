@@ -1,11 +1,14 @@
+// In: app/dashboard/products/[id]/edit/EditProductForm.tsx
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+// REMOVE: import { createClient } from '@/lib/supabase/client'
+// REMOVE: import { useRouter } from 'next/navigation'
+import { useState, useTransition } from 'react' // <-- Add useTransition
 import imageCompression from 'browser-image-compression'
 import Image from 'next/image'
 import CustomSelect from '@/components/CustomSelect'
+import { updateProduct } from '../../actions' // <-- Import the Server Action
+import { toast } from 'sonner' // <-- For notifications
 
 type Product = {
     id: string
@@ -34,8 +37,8 @@ const categoryOptions = [
 ]
 
 export default function EditProductForm({ product }: { product: Product }) {
-    const router = useRouter()
-    const supabase = createClient()
+    // REMOVE: const router = useRouter()
+    // REMOVE: const supabase = createClient()
 
     const [formData, setFormData] = useState<FormDataState>({
         name: product.name,
@@ -45,7 +48,7 @@ export default function EditProductForm({ product }: { product: Product }) {
         category: product.category,
     })
     const [imageFile, setImageFile] = useState<File | null>(null)
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isPending, startTransition] = useTransition(); // <-- Use transition for loading state
     const [uploadError, setUploadError] = useState<string | null>(null)
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,76 +86,53 @@ export default function EditProductForm({ product }: { product: Product }) {
         }
     }
 
-    const handleUpdate = async (e: React.FormEvent) => {
+    // This function now calls the Server Action
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (isSubmitting) return;
+        if (isPending) return;
 
-        setIsSubmitting(true)
-        setUploadError(null)
+        startTransition(async () => {
+            setUploadError(null)
 
-        let finalImageUrl = product.image_url
+            // Build FormData from state, like you do in NewProductPage
+            const fd = new FormData();
+            fd.append('id', product.id);
+            fd.append('image_url', product.image_url || ''); // Send existing URL
+            fd.append('name', formData.name);
+            fd.append('description', formData.description);
+            fd.append('price', formData.price);
+            fd.append('mrp', formData.mrp);
+            fd.append('category', formData.category);
 
-        try {
             if (imageFile) {
-                // Remove old image if exists
-                if (product.image_url) {
-                    const oldImagePathArray = product.image_url.split('/');
-                    const oldImageName = oldImagePathArray[oldImagePathArray.length - 1];
-                    if (oldImageName) {
-                        const { error: removeError } = await supabase.storage.from('product_images').remove([`public/${oldImageName}`]);
-                        if (removeError) {
-                            console.warn("Could not remove old image, continuing anyway:", removeError.message);
-                        }
-                    }
-                }
-
-                // Compress image
-                const options = { maxSizeMB: 0.3, maxWidthOrHeight: 1280, useWebWorker: true }
-                const compressedFile = await imageCompression(imageFile, options)
-                const filePath = `public/${Date.now()}_${compressedFile.name}`
-                const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('product_images')
-                    .upload(filePath, compressedFile)
-
-                if (uploadError) throw uploadError
-
-                finalImageUrl = supabase.storage.from('product_images').getPublicUrl(uploadData.path).data.publicUrl
+                fd.append('image_file', imageFile); // Add new file if it exists
             }
 
-            const dataToUpdate = {
-                ...formData,
-                price: parseFloat(formData.price) || 0,
-                mrp: parseFloat(formData.mrp) || null,
-                image_url: finalImageUrl,
+            const result = await updateProduct(fd);
+
+            if (result?.error) {
+                setUploadError(`Update Failed: ${result.error}`);
+                toast.error(`Update Failed: ${result.error}`);
+            } else {
+                toast.success('Product updated successfully!');
+                // Redirect is now handled by the server action
             }
-
-            const { error: updateError } = await supabase.from('products').update(dataToUpdate).eq('id', product.id)
-            if (updateError) throw updateError
-
-            alert('Product updated successfully!')
-            router.push('/dashboard/products')
-            router.refresh()
-        } catch (error: unknown) {
-            const err = error as { message?: string }
-            setUploadError(`Update Failed: ${err.message ?? 'Unknown error'}`)
-            alert(`Error updating product: ${err.message ?? 'Unknown error'}`)
-        } finally {
-            setIsSubmitting(false)
-        }
+        });
     }
 
     return (
         <form
-            onSubmit={handleUpdate}
+            onSubmit={handleSubmit} // <-- Use the new submit handler
             className="p-8 space-y-8 backdrop-blur-lg bg-black/30 rounded-2xl border border-green-500/20 shadow-lg shadow-green-900/20"
         >
+            {/* Form inputs remain the same, just ensure they have 'name' attributes */}
             <div className="space-y-2">
                 <label htmlFor="name" className="block text-sm font-semibold text-gray-300">
                     Product Name
                 </label>
                 <input
                     id="name"
-                    name="name"
+                    name="name" // <-- Ensure name attribute is present
                     type="text"
                     value={formData.name}
                     onChange={handleChange}
@@ -167,7 +147,7 @@ export default function EditProductForm({ product }: { product: Product }) {
                 </label>
                 <textarea
                     id="description"
-                    name="description"
+                    name="description" // <-- Ensure name attribute is present
                     value={formData.description}
                     onChange={handleChange}
                     rows={5}
@@ -182,7 +162,7 @@ export default function EditProductForm({ product }: { product: Product }) {
                     </label>
                     <input
                         id="price"
-                        name="price"
+                        name="price" // <-- Ensure name attribute is present
                         type="text"
                         inputMode="decimal"
                         value={formData.price}
@@ -197,7 +177,7 @@ export default function EditProductForm({ product }: { product: Product }) {
                     </label>
                     <input
                         id="mrp"
-                        name="mrp"
+                        name="mrp" // <-- Ensure name attribute is present
                         type="text"
                         inputMode="decimal"
                         value={formData.mrp}
@@ -210,6 +190,7 @@ export default function EditProductForm({ product }: { product: Product }) {
                     <label htmlFor="category" className="block text-sm font-semibold text-gray-300">
                         Category
                     </label>
+                    {/* CustomSelect doesn't use a 'name', so we MUST rely on state, which handleSubmit now does */}
                     <CustomSelect
                         placeholder="Select Category"
                         options={categoryOptions}
@@ -240,7 +221,7 @@ export default function EditProductForm({ product }: { product: Product }) {
                 )}
                 <input
                     id="image_file"
-                    name="image_file"
+                    name="image_file" // <-- Ensure name attribute is present
                     type="file"
                     accept="image/png, image/jpeg, image/webp"
                     onChange={handleFileChange}
@@ -252,10 +233,10 @@ export default function EditProductForm({ product }: { product: Product }) {
             <div className="flex justify-end pt-4">
                 <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isPending} // <-- Use isPending
                     className="px-8 py-3 font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-green-500"
                 >
-                    {isSubmitting ? 'Updating...' : 'Update Product'}
+                    {isPending ? 'Updating...' : 'Update Product'}
                 </button>
             </div>
         </form>
