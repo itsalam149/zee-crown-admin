@@ -1,14 +1,12 @@
 // In: app/dashboard/products/[id]/edit/EditProductForm.tsx
 'use client'
 
-// REMOVE: import { createClient } from '@/lib/supabase/client'
-// REMOVE: import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react' // <-- Add useTransition
+import { useState, useTransition } from 'react'
 import imageCompression from 'browser-image-compression'
 import Image from 'next/image'
 import CustomSelect from '@/components/CustomSelect'
-import { updateProduct } from '../../actions' // <-- Import the Server Action
-import { toast } from 'sonner' // <-- For notifications
+import { updateProduct } from '../../actions'
+import { toast } from 'sonner'
 
 type Product = {
     id: string
@@ -37,9 +35,6 @@ const categoryOptions = [
 ]
 
 export default function EditProductForm({ product }: { product: Product }) {
-    // REMOVE: const router = useRouter()
-    // REMOVE: const supabase = createClient()
-
     const [formData, setFormData] = useState<FormDataState>({
         name: product.name,
         description: product.description || '',
@@ -48,7 +43,7 @@ export default function EditProductForm({ product }: { product: Product }) {
         category: product.category,
     })
     const [imageFile, setImageFile] = useState<File | null>(null)
-    const [isPending, startTransition] = useTransition(); // <-- Use transition for loading state
+    const [isPending, startTransition] = useTransition();
     const [uploadError, setUploadError] = useState<string | null>(null)
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,9 +51,9 @@ export default function EditProductForm({ product }: { product: Product }) {
         if (!file) return
 
         try {
-            // Compress image to around 250 KB
+            // ✅ FIX: Compress image to 100 KB
             const options = {
-                maxSizeMB: 0.25, // 250 KB
+                maxSizeMB: 0.1, // 100 KB
                 maxWidthOrHeight: 1280,
                 useWebWorker: true,
             }
@@ -86,7 +81,6 @@ export default function EditProductForm({ product }: { product: Product }) {
         }
     }
 
-    // This function now calls the Server Action
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (isPending) return;
@@ -94,10 +88,9 @@ export default function EditProductForm({ product }: { product: Product }) {
         startTransition(async () => {
             setUploadError(null)
 
-            // Build FormData from state, like you do in NewProductPage
             const fd = new FormData();
             fd.append('id', product.id);
-            fd.append('image_url', product.image_url || ''); // Send existing URL
+            fd.append('image_url', product.image_url || '');
             fd.append('name', formData.name);
             fd.append('description', formData.description);
             fd.append('price', formData.price);
@@ -105,7 +98,7 @@ export default function EditProductForm({ product }: { product: Product }) {
             fd.append('category', formData.category);
 
             if (imageFile) {
-                fd.append('image_file', imageFile); // Add new file if it exists
+                fd.append('image_file', imageFile);
             }
 
             const result = await updateProduct(fd);
@@ -115,24 +108,25 @@ export default function EditProductForm({ product }: { product: Product }) {
                 toast.error(`Update Failed: ${result.error}`);
             } else {
                 toast.success('Product updated successfully!');
-                // Redirect is now handled by the server action
+                // Redirect is handled by the server action
             }
         });
     }
 
     return (
         <form
-            onSubmit={handleSubmit} // <-- Use the new submit handler
+            onSubmit={handleSubmit}
             className="p-8 space-y-8 backdrop-blur-lg bg-black/30 rounded-2xl border border-green-500/20 shadow-lg shadow-green-900/20"
         >
-            {/* Form inputs remain the same, just ensure they have 'name' attributes */}
+            {/* ... (rest of the form remains the same) ... */}
+
             <div className="space-y-2">
                 <label htmlFor="name" className="block text-sm font-semibold text-gray-300">
                     Product Name
                 </label>
                 <input
                     id="name"
-                    name="name" // <-- Ensure name attribute is present
+                    name="name"
                     type="text"
                     value={formData.name}
                     onChange={handleChange}
@@ -147,7 +141,7 @@ export default function EditProductForm({ product }: { product: Product }) {
                 </label>
                 <textarea
                     id="description"
-                    name="description" // <-- Ensure name attribute is present
+                    name="description"
                     value={formData.description}
                     onChange={handleChange}
                     rows={5}
@@ -162,7 +156,7 @@ export default function EditProductForm({ product }: { product: Product }) {
                     </label>
                     <input
                         id="price"
-                        name="price" // <-- Ensure name attribute is present
+                        name="price"
                         type="text"
                         inputMode="decimal"
                         value={formData.price}
@@ -177,7 +171,7 @@ export default function EditProductForm({ product }: { product: Product }) {
                     </label>
                     <input
                         id="mrp"
-                        name="mrp" // <-- Ensure name attribute is present
+                        name="mrp"
                         type="text"
                         inputMode="decimal"
                         value={formData.mrp}
@@ -190,7 +184,6 @@ export default function EditProductForm({ product }: { product: Product }) {
                     <label htmlFor="category" className="block text-sm font-semibold text-gray-300">
                         Category
                     </label>
-                    {/* CustomSelect doesn't use a 'name', so we MUST rely on state, which handleSubmit now does */}
                     <CustomSelect
                         placeholder="Select Category"
                         options={categoryOptions}
@@ -221,7 +214,7 @@ export default function EditProductForm({ product }: { product: Product }) {
                 )}
                 <input
                     id="image_file"
-                    name="image_file" // <-- Ensure name attribute is present
+                    name="image_file"
                     type="file"
                     accept="image/png, image/jpeg, image/webp"
                     onChange={handleFileChange}
@@ -233,7 +226,7 @@ export default function EditProductForm({ product }: { product: Product }) {
             <div className="flex justify-end pt-4">
                 <button
                     type="submit"
-                    disabled={isPending} // <-- Use isPending
+                    disabled={isPending}
                     className="px-8 py-3 font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-green-500"
                 >
                     {isPending ? 'Updating...' : 'Update Product'}

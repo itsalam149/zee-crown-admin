@@ -34,9 +34,9 @@ export default function NewProductPage() {
         if (!file) return
 
         try {
-            // Compress image to around 250 KB
+            // ✅ FIX: Compress image to 100 KB
             const options = {
-                maxSizeMB: 0.25, // 250 KB
+                maxSizeMB: 0.1, // 100 KB
                 maxWidthOrHeight: 1280,
                 useWebWorker: true,
             }
@@ -108,6 +108,8 @@ export default function NewProductPage() {
                         onSubmit={handleSubmit}
                         className="p-8 space-y-8 backdrop-blur-lg bg-black/30 rounded-2xl border border-green-500/20 shadow-lg shadow-green-900/20"
                     >
+                        {/* ... (rest of the form remains the same) ... */}
+
                         <div className="space-y-2">
                             <label htmlFor="name" className="block text-sm font-semibold text-gray-300">
                                 Product Name
@@ -212,7 +214,7 @@ export default function NewProductPage() {
                 </div>
             </div>
 
-            {/* ✅ Success Modal */}
+            {/* ... (rest of the modal remains the same) ... */}
             <Transition appear show={showSuccess} as={Fragment}>
                 <Dialog as="div" className="relative z-50" onClose={() => { }}>
                     <Transition.Child
