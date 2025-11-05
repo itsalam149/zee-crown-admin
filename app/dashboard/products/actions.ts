@@ -138,7 +138,11 @@ export async function updateProductCategory(
     productId: string,
     newCategory: string
 ) {
-    const supabase = await createAdminClient();
+    //
+    // ✅ ******** THE FIX IS HERE ********
+    // Removed 'await' before createAdminClient()
+    //
+    const supabase = createAdminClient();
     const { error } = await supabase
         .from('products')
         .update({ category: newCategory })
