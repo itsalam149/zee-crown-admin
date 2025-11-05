@@ -51,9 +51,9 @@ export default function EditProductForm({ product }: { product: Product }) {
         if (!file) return
 
         try {
-            // ✅ FIX: Compress image to 100 KB
+            // ✅ FIX: Compress image to 50 KB
             const options = {
-                maxSizeMB: 0.1, // 100 KB
+                maxSizeMB: 0.05, // 50 KB
                 maxWidthOrHeight: 1280,
                 useWebWorker: true,
             }

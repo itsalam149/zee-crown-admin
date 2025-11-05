@@ -25,7 +25,7 @@ export function BannerForm() {
 
         try {
             const options = {
-                maxSizeMB: 0.5, // 500 KB
+                maxSizeMB: 0.1, // 100 KB
                 maxWidthOrHeight: 1920,
                 useWebWorker: true,
             };
