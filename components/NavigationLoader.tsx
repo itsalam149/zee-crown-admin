@@ -40,22 +40,26 @@ export default function NavigationLoader() {
                 if (url.pathname !== location.pathname || url.search !== location.search) {
                     setIsLoading(true);
                 }
-            } catch (err) {
+            } catch { // <-- Removed unused 'err' variable
                 // malformed URL, ignore
             }
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const origPush = (history as any).pushState;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const origReplace = (history as any).replaceState;
 
-        (history as any).pushState = function (...args: any[]) {
-            origPush.apply(this, args);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (history as any).pushState = function (...args: any[]) { // eslint-disable-line @typescript-eslint/no-explicit-any
+            origPush.apply(this, args); // eslint-disable-line @typescript-eslint/no-explicit-any
             setIsLoading(true);
             return;
         };
 
-        (history as any).replaceState = function (...args: any[]) {
-            origReplace.apply(this, args);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (history as any).replaceState = function (...args: any[]) { // eslint-disable-line @typescript-eslint/no-explicit-any
+            origReplace.apply(this, args); // eslint-disable-line @typescript-eslint/no-explicit-any
             setIsLoading(true);
             return;
         };
@@ -69,8 +73,8 @@ export default function NavigationLoader() {
             document.removeEventListener('click', onDocClick, true);
             window.removeEventListener('popstate', onPop);
             // restore history methods
-            (history as any).pushState = origPush;
-            (history as any).replaceState = origReplace;
+            (history as any).pushState = origPush; // eslint-disable-line @typescript-eslint/no-explicit-any
+            (history as any).replaceState = origReplace; // eslint-disable-line @typescript-eslint/no-explicit-any
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

@@ -41,10 +41,10 @@ export default function RootLayout({
           <ProgressBarProvider>
             <Suspense fallback={<GlobalLoader />}>
               {children}
-            </Suspense>
 
-            {/* client-side navigation loader */}
-            <NavigationLoader />
+              {/* MOVED: client-side navigation loader is now INSIDE Suspense */}
+              <NavigationLoader />
+            </Suspense>
           </ProgressBarProvider>
 
           <Toaster richColors position="top-right" />
