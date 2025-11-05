@@ -3,10 +3,10 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-// 1. REMOVE Suspense and GlobalLoader imports
-// import { Suspense } from 'react';
-// import GlobalLoader from '@/components/GlobalLoader';
-import ProgressBarProvider from '@/components/ProgressBarProvider'; // 2. Import the new provider
+import { Suspense } from 'react';
+import GlobalLoader from '@/components/GlobalLoader';
+import NavigationLoader from '@/components/NavigationLoader';
+import ProgressBarProvider from '@/components/ProgressBarProvider'; // progress bar provider
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,9 +34,17 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          {/* 3. Wrap children in the new provider */}
+          {/* Wrap children in the new provider. Use Suspense fallback so the
+              GlobalLoader renders during initial server-side rendering / full
+              page refresh. NavigationLoader will show the full-screen loader
+              during client-side route transitions. */}
           <ProgressBarProvider>
-            {children}
+            <Suspense fallback={<GlobalLoader />}>
+              {children}
+            </Suspense>
+
+            {/* client-side navigation loader */}
+            <NavigationLoader />
           </ProgressBarProvider>
 
           <Toaster richColors position="top-right" />

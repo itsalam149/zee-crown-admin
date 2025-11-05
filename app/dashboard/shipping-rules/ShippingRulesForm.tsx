@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { updateShippingRules } from "./actions";
+import { Loader2 } from 'lucide-react';
 
 type ShippingRule = {
     id: string;
@@ -31,13 +32,13 @@ export default function ShippingRulesForm({ rules }: { rules: ShippingRule[] }) 
 
     return (
         <div className="max-w-3xl mx-auto">
-            <div className="mb-6 p-5 bg-gray-900/50 border border-gray-700 rounded-xl">
-                <h3 className="text-lg font-semibold text-white mb-2">
+            <div className="mb-6 p-6 bg-gradient-to-b from-gray-900/60 to-gray-800/40 border border-gray-700 rounded-2xl">
+                <h3 className="text-2xl font-extrabold text-white mb-2">
                     Shipping Rules Configuration
                 </h3>
                 <p className="text-sm text-gray-400 leading-relaxed">
-                    Define the charges and thresholds for your shipping policy. The first rule applies a fixed
-                    delivery charge for all orders. The second rule sets a minimum order value for free shipping.
+                    Manage how shipping is applied across orders. The first rule is a flat shipping
+                    charge for all orders; the second sets the minimum cart value for free shipping.
                 </p>
             </div>
 
@@ -49,7 +50,7 @@ export default function ShippingRulesForm({ rules }: { rules: ShippingRule[] }) 
                     return (
                         <div
                             key={rule.id}
-                            className="p-6 rounded-xl border border-gray-700 bg-gray-800/50 shadow-sm"
+                            className="p-6 rounded-2xl border border-gray-700 bg-gradient-to-b from-gray-800/60 to-gray-900/40 shadow-lg"
                         >
                             <input type="hidden" name={`id_${originalIndex + 1}`} value={rule.id} />
                             <input
@@ -73,58 +74,48 @@ export default function ShippingRulesForm({ rules }: { rules: ShippingRule[] }) 
                                 />
                             )}
 
-                            <h3 className="text-xl font-semibold text-white mb-4">
-                                {isFirstRule ? "Standard Shipping" : "Free Shipping"}
-                            </h3>
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-semibold text-white">
+                                    {isFirstRule ? "Standard Shipping" : "Free Shipping"}
+                                </h3>
+                                <span className="inline-flex items-center rounded-full bg-gray-700/60 px-3 py-1 text-sm font-medium text-green-400">
+                                    {isFirstRule ? 'Charge' : 'Threshold'}
+                                </span>
+                            </div>
 
-                            <div className="max-w-md">
-                                {isFirstRule ? (
-                                    <div className="space-y-2">
-                                        <label
-                                            htmlFor={`charge_${originalIndex + 1}`}
-                                            className="block text-sm font-medium text-gray-300"
-                                        >
-                                            Shipping Charge (applies to all orders)
-                                        </label>
-                                        <input
-                                            id={`charge_${originalIndex + 1}`}
-                                            name={`charge_${originalIndex + 1}`}
-                                            type="number"
-                                            step="1"
-                                            min="0"
-                                            defaultValue={rule.charge}
-                                            placeholder="e.g., 40"
-                                            className="w-full bg-gray-900 border border-gray-700 text-white text-base rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                                            required
-                                        />
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                                <div className="sm:col-span-2">
+                                    <label
+                                        htmlFor={isFirstRule ? `charge_${originalIndex + 1}` : `min_order_value_${originalIndex + 1}`}
+                                        className="block text-sm font-medium text-gray-300 mb-2"
+                                    >
+                                        {isFirstRule ? 'Shipping Charge (₹)' : 'Minimum Order Value (₹)'}
+                                    </label>
+                                    <input
+                                        id={isFirstRule ? `charge_${originalIndex + 1}` : `min_order_value_${originalIndex + 1}`}
+                                        name={isFirstRule ? `charge_${originalIndex + 1}` : `min_order_value_${originalIndex + 1}`}
+                                        type="number"
+                                        step="1"
+                                        min="0"
+                                        defaultValue={isFirstRule ? rule.charge : rule.min_order_value}
+                                        placeholder={isFirstRule ? 'e.g., 40' : 'e.g., 500'}
+                                        className="w-full bg-gray-900 border border-gray-700 text-white text-base rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-600"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="flex sm:col-span-1 items-center justify-end">
+                                    <div className="text-right">
+                                        <p className="text-sm text-gray-400">Active</p>
+                                        <p className="text-sm font-semibold text-white">Yes</p>
                                     </div>
-                                ) : (
-                                    <div className="space-y-2">
-                                        <label
-                                            htmlFor={`min_order_value_${originalIndex + 1}`}
-                                            className="block text-sm font-medium text-gray-300"
-                                        >
-                                            Minimum Order Value for Free Shipping
-                                        </label>
-                                        <input
-                                            id={`min_order_value_${originalIndex + 1}`}
-                                            name={`min_order_value_${originalIndex + 1}`}
-                                            type="number"
-                                            step="1"
-                                            min="0"
-                                            defaultValue={rule.min_order_value}
-                                            placeholder="e.g., 500"
-                                            className="w-full bg-gray-900 border border-gray-700 text-white text-base rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                                            required
-                                        />
-                                    </div>
-                                )}
+                                </div>
                             </div>
                         </div>
                     );
                 })}
 
-                <div className="p-5 bg-gray-900/50 border border-gray-700 rounded-xl">
+                <div className="p-5 bg-gradient-to-b from-gray-900/50 to-gray-800/30 border border-gray-700 rounded-xl">
                     <h4 className="font-semibold text-white mb-2">Example Preview</h4>
                     <div className="text-sm text-gray-400 space-y-1">
                         <p>
@@ -141,7 +132,7 @@ export default function ShippingRulesForm({ rules }: { rules: ShippingRule[] }) 
                         <button
                             type="button"
                             onClick={() => setLocalRules(rules)}
-                            className="flex-1 px-6 py-4 font-semibold text-base text-white bg-gray-700 rounded-lg hover:bg-gray-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-6 py-3 font-semibold text-base text-white bg-gray-700 rounded-lg hover:bg-gray-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={isSubmitting}
                         >
                             Reset
@@ -149,9 +140,16 @@ export default function ShippingRulesForm({ rules }: { rules: ShippingRule[] }) 
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="flex-1 px-8 py-4 font-semibold text-base text-white bg-gray-600 rounded-lg hover:bg-gray-500 transition-all disabled:opacity-50"
+                            className="flex-1 px-8 py-3 font-semibold text-base text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                         >
-                            {isSubmitting ? "Saving..." : "Save Rules"}
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 size={16} className="animate-spin text-white" />
+                                    Saving...
+                                </>
+                            ) : (
+                                'Save Rules'
+                            )}
                         </button>
                     </div>
                     <p className="text-center text-sm text-gray-500">
